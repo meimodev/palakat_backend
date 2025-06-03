@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -21,21 +20,26 @@ model users {
   name               String
   dob                DateTime
   age                Int
-  memberships_serial membership[] 
+  phone              String       @unique
+  memberships_serial membership[]
+  churches           churches[]
 
   created_at DateTime @default(now())
 }
 
 model churches {
-  id         String       @id @unique @default(uuid())
-  name       String
-  location   Json
-  columns    columns[]    
-  memberships membership[] 
+  id       String @id @unique @default(uuid())
+  name     String
+  location Json
+  user_id  String
+
+  user        users        @relation(fields: [user_id], references: [id])
+  columns     columns[]
+  memberships membership[]
 }
 
 model columns {
-  id        String   @id @unique @default(uuid())
+  id        String @id @unique @default(uuid())
   name      String
   church_id String
 
