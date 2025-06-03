@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id                 String       @id @unique @default(uuid())
+  gender             String
+  marital_status     String
+  name               String
+  dob                DateTime
+  age                Int
+  memberships_serial membership[] 
+
+  created_at DateTime @default(now())
+}
+
+model churches {
+  id         String       @id @unique @default(uuid())
+  name       String
+  location   Json
+  columns    columns[]    
+  memberships membership[] 
+}
+
+model columns {
+  id        String   @id @unique @default(uuid())
+  name      String
+  church_id String
+
+  church churches @relation(fields: [church_id], references: [id])
+}
+
+model membership {
+  id        String  @id @unique @default(uuid())
+  user_id   String
+  church_id String
+  baptize   Boolean
+  sidi      Boolean
+
+  user   users    @relation(fields: [user_id], references: [id])
+  church churches @relation(fields: [church_id], references: [id])
+}
