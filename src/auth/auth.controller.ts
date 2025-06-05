@@ -5,7 +5,6 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  
   @Post('validate-user')
   async validateUser(phone: string) {
     return this.authService.validateUser(phone);

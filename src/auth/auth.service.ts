@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; 
-
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -8,14 +7,14 @@ export class AuthService {
 
   async validateUser(phone: string) {
     try {
-      const user = await this.prisma.users.findUnique({
+      const account = await this.prisma.account.findUnique({
         where: { phone },
       });
-      if (user) {
+      if (account) {
         return {
           statusCode: 200,
           message: 'User found',
-          data: user,
+          data: account,
         };
       } else {
         return {
