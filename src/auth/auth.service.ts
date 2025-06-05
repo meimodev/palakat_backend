@@ -26,7 +26,7 @@ export class AuthService {
     } catch (error) {
       return {
         statusCode: 500,
-        message: 'User validation failed',
+        message: `User validation failed ${error}`,
         data: null,
       };
     }
