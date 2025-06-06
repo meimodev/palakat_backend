@@ -11,7 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_POSTGRE_URL")
+  url      = env("DATABASE_POSTGRES_URL")
 }
 
 model Church {
