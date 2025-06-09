@@ -1,9 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async generateClientToken(payload: { clientId: string }) {
+    const token =  this.jwtService.sign(payload);
+    if (!token) {
+      throw new Error('Token generation failed');
+    }
+
+    return {
+      data: token,
+      message: 'Client authenticated successfully',
+    };
+  }
 
   async validateUser(phone: string) {
     try {
