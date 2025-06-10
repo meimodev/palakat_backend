@@ -13,6 +13,6 @@ import { PrismaExceptionFilter } from './exception.filter';
     AccountModule,
   ],
   controllers: [AppController],
-  providers: [AppService,Logger,PrismaExceptionFilter],
+  providers: [AppService, Logger, PrismaExceptionFilter],
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';   
+import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { ValidatedClient } from './strategies/client.strategy';

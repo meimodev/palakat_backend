@@ -10,7 +10,7 @@ export class AuthService {
   ) {}
 
   async generateClientToken(payload: { clientId: string }) {
-    const token =  this.jwtService.sign(payload);
+    const token = this.jwtService.sign(payload);
     if (!token) {
       throw new Error('Token generation failed');
     }
