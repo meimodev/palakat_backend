@@ -1,10 +1,12 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
+  
+  const prismaExceptionFilter = app.get(PrismaExceptionFilter);
 
   app.enableCors({
     origin: '*',
@@ -12,7 +14,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  app.useGlobalFilters(prismaExceptionFilter);
 
   await app.listen(3000);
 }
