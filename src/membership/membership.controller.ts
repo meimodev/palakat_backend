@@ -32,7 +32,7 @@ export class MembershipController {
   ) {
     const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
     const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;
-    
+
     return this.membershipService.findAll(churchIdNum, columnIdNum);
   }
 
