@@ -1,21 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; 
-
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async generateClientToken(payload: { clientId: string }) {
+    const token = this.jwtService.sign(payload);
+    if (!token) {
+      throw new Error('Token generation failed');
+    }
+
+    return {
+      data: token,
+      message: 'Client authenticated successfully',
+    };
+  }
 
   async validateUser(phone: string) {
     try {
-      const user = await this.prisma.users.findUnique({
+      const account = await this.prisma.account.findUnique({
         where: { phone },
       });
-      if (user) {
+      if (account) {
         return {
           statusCode: 200,
           message: 'User found',
-          data: user,
+          data: account,
         };
       } else {
         return {
@@ -27,7 +42,7 @@ export class AuthService {
     } catch (error) {
       return {
         statusCode: 500,
-        message: 'User validation failed',
+        message: `User validation failed`,
         data: null,
       };
     }
