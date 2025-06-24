@@ -1,25 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Prisma } from '@prisma/client';
-import { internalServerError, notFound, badRequest } from 'src/common/errors';
+import { HttpStatus } from '@nestjs/common/enums/http-status.enum';
 
 @Injectable()
 export class AccountService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async findOne(params: { phone?: string; id?: string }) {
+  async getAccount(params: Prisma.AccountWhereUniqueInput) {
     const { phone, id } = params;
 
     if (!phone && !id) {
-      badRequest('Either phone or id must be provided.');
+      throw new BadRequestException('Either phone or id must be provided.');
+    }
+
+    let whereClause: Prisma.AccountWhereUniqueInput;
+
+    if (phone) {
+      whereClause = { phone: phone };
+    } else {
+      whereClause = { id: Number(id) };
     }
 
     try {
-      const account = await this.prisma.account.findFirst({
-        where: {
-          ...(phone ? { phone } : {}),
-          ...(id && { id: parseInt(id) }),
-        },
+      const account = await this.prisma.account.findUnique({
+        where: whereClause,
         include: {
           membership: {
             include: {
@@ -31,7 +36,7 @@ export class AccountService {
       });
 
       if (!account) {
-        notFound('Account not found');
+        throw new NotFoundException('Account not found');
       }
 
       return {
@@ -40,7 +45,7 @@ export class AccountService {
       };
     } catch (error) {
       console.error('Error finding account:', error);
-      internalServerError('Error retrieving account');
+      throw new InternalServerErrorException('Error retrieving account');
     }
   }
 
