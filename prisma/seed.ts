@@ -125,10 +125,7 @@ async function main() {
       longitude: '106.8650',
       address: 'Jl. Medan Merdeka Timur, Jakarta Pusat',
       columns: {
-        create: [
-          { name: 'Kolom Keluarga' },
-          { name: 'Kolom Single' },
-        ],
+        create: [{ name: 'Kolom Keluarga' }, { name: 'Kolom Single' }],
       },
     },
     include: { columns: true },
@@ -216,13 +213,17 @@ async function main() {
   // Display available accounts without membership
   const accountsWithoutMembership = await prisma.account.findMany({
     where: {
-      membership: null
-    }
+      membership: null,
+    },
   });
 
-  console.log(`\n👤 Accounts available for new memberships (${accountsWithoutMembership.length}):`);
+  console.log(
+    `\n👤 Accounts available for new memberships (${accountsWithoutMembership.length}):`,
+  );
   accountsWithoutMembership.forEach((account) => {
-    console.log(`   - ID: ${account.id}, Name: ${account.name}, Phone: ${account.phone}`);
+    console.log(
+      `   - ID: ${account.id}, Name: ${account.name}, Phone: ${account.phone}`,
+    );
   });
 
   // 4. Display summary
@@ -244,11 +245,15 @@ async function main() {
   allChurches.forEach((church) => {
     console.log(`\n🏛️  ${church.name}`);
     console.log(`   📍 ${church.address}`);
-    console.log(`   📊 Columns: ${church.columns.map(c => c.name).join(', ')}`);
+    console.log(
+      `   📊 Columns: ${church.columns.map((c) => c.name).join(', ')}`,
+    );
     console.log(`   👥 Members: ${church.memberships.length}`);
 
     church.memberships.forEach((membership) => {
-      console.log(`      - ${membership.account.name} (${membership.column.name}) - Baptize: ${membership.baptize}, Sidi: ${membership.sidi}`);
+      console.log(
+        `      - ${membership.account.name} (${membership.column.name}) - Baptize: ${membership.baptize}, Sidi: ${membership.sidi}`,
+      );
     });
   });
 
