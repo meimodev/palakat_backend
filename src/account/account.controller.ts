@@ -5,6 +5,10 @@ import {
   Post,
   Body,
   UseGuards,
+  Patch,
+  ParseIntPipe,
+  Delete,
+  Param,
   // Patch,
   // Param,
   // Delete,
@@ -27,5 +31,15 @@ export class AccountController {
   @Post()
   create(@Body() createAccountDto: Prisma.AccountCreateInput) {
     return this.accountService.create(createAccountDto);
+  }
+
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateAccountDto: Prisma.AccountUpdateInput) {
+    return this.accountService.update(id, updateAccountDto);
+  }
+
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.accountService.delete(id);
   }
 }

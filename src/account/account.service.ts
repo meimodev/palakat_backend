@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Prisma } from '@prisma/client';
 import { HttpStatus } from '@nestjs/common/enums/http-status.enum';
@@ -10,10 +10,6 @@ export class AccountService {
   async getAccount(params: Prisma.AccountWhereUniqueInput) {
     const { phone, id } = params;
 
-    if (!phone && !id) {
-      throw new BadRequestException('Either phone or id must be provided.');
-    }
-
     let whereClause: Prisma.AccountWhereUniqueInput;
 
     if (phone) {
@@ -22,31 +18,17 @@ export class AccountService {
       whereClause = { id: Number(id) };
     }
 
-    try {
-      const account = await this.prisma.account.findUnique({
-        where: whereClause,
-        include: {
-          membership: {
-            include: {
-              column: true,
-              church: true,
-            },
-          },
-        },
-      });
+    const account = await this.prisma.account.findUniqueOrThrow({
+      where: whereClause,
+      include: {
+        membership: true,
+      },
+    });
 
-      if (!account) {
-        throw new NotFoundException('Account not found');
-      }
-
-      return {
-        message: HttpStatus.OK,
-        data: account,
-      };
-    } catch (error) {
-      console.error('Error finding account:', error);
-      throw new InternalServerErrorException('Error retrieving account');
-    }
+    return {
+      message: HttpStatus.OK,
+      data: account,
+    };
   }
 
   async create(createAccountDto: Prisma.AccountCreateInput) {
@@ -57,6 +39,30 @@ export class AccountService {
       return {
         message: 'OK',
         data: account,
+      };
+    }
+  }
+
+  async update(id: number, updateAccountDto: Prisma.AccountUpdateInput) {
+    const account = await this.prisma.account.update({
+      where: { id: id },
+      data: updateAccountDto,
+    });
+    if (account) {
+      return {
+        message: 'OK',
+        data: account,
+      };
+    }
+  }
+
+  async delete(id: number) {
+    const account = await this.prisma.account.delete({
+      where: { id: id },
+    });
+    if (account) {
+      return {
+        message: 'OK',
       };
     }
   }
