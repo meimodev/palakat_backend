@@ -3,9 +3,12 @@ import { PrismaClient, Gender } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting seed...');
+  if (!['localhost', '127.0.0.1'].some((host) => process.env.DATABASE_URL?.includes(host))) {
+    console.error('❌ Seeding is only allowed on local environments.');
+    process.exit(1);
+  }
 
-  // Clean existing data (optional - hati-hati di production!)
+  console.log('🌱 Starting seed...');
   await prisma.membership.deleteMany();
   await prisma.column.deleteMany();
   await prisma.church.deleteMany();
