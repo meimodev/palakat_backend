@@ -11,8 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { MembershipService } from './membership.service';
-import { CreateMembershipDto } from './dto/create-membership.dto';
-import { UpdateMembershipDto } from './dto/update-membership.dto';
+import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 
 @UseGuards(AuthGuard('jwt'))
@@ -21,7 +20,7 @@ export class MembershipController {
   constructor(private readonly membershipService: MembershipService) {}
 
   @Post()
-  async create(@Body() createMembershipDto: CreateMembershipDto) {
+  async create(@Body() createMembershipDto: Prisma.MembershipCreateInput) {
     return this.membershipService.create(createMembershipDto);
   }
 
@@ -44,7 +43,7 @@ export class MembershipController {
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateMembershipDto: UpdateMembershipDto,
+    @Body() updateMembershipDto: Prisma.MembershipUpdateInput,
   ) {
     return this.membershipService.update(id, updateMembershipDto);
   }
