@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Membership, Prisma } from '@prisma/client';
 
@@ -53,7 +53,7 @@ export class MembershipService {
   }
 
   async findOne(id: number): Promise<{ message: string; data: Membership }> {
-    const membership = await this.prisma.membership.findUnique({
+    const membership = await this.prisma.membership.findUniqueOrThrow({
       where: { id },
       include: {
         account: true,
@@ -61,11 +61,7 @@ export class MembershipService {
         column: true,
       },
     });
-
-    if (!membership) {
-      throw new NotFoundException(`Membership with ID ${id} not found`);
-    }
-
+    
     return {
       message: 'Membership retrieved successfully',
       data: membership,
@@ -76,7 +72,6 @@ export class MembershipService {
     id: number,
     updateMembershipDto: Prisma.MembershipUpdateInput,
   ): Promise<{ message: string; data: Membership }> {
-    await this.findOne(id); // cek jika membership ada
 
     const membership = await this.prisma.membership.update({
       where: { id },
