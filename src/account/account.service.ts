@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Prisma } from '@prisma/client';
-import { HttpStatus } from '@nestjs/common/enums/http-status.enum';
-
 @Injectable()
 export class AccountService {
   constructor(private readonly prisma: PrismaService) { }
@@ -26,7 +24,7 @@ export class AccountService {
     });
 
     return {
-      message: HttpStatus.OK,
+      message: 'OK',
       data: account,
     };
   }
