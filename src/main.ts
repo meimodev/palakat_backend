@@ -5,7 +5,7 @@ import { PrismaExceptionFilter } from './exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
-
+  
   const prismaExceptionFilter = app.get(PrismaExceptionFilter);
 
   app.enableCors({
@@ -16,7 +16,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(prismaExceptionFilter);
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
 }
 
 bootstrap();

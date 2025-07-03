@@ -8,8 +8,6 @@ export class PrismaExceptionFilter extends BaseExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     if (exception instanceof Prisma.PrismaClientValidationError) {
-      // Handle Exception throw on each endpoint service here!
-      // bisa di check disini response.status buat ngeliat HTTP code + exception.message untuk handle error yg spesifik
       response.status(HttpStatus.BAD_REQUEST).json({
         message: 'Invalid input parameter',
         error: exception.message,
