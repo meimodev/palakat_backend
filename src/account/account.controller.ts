@@ -17,11 +17,10 @@ import { AccountService } from './account.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 
-
 @Controller('account')
 @UseGuards(AuthGuard('jwt'))
 export class AccountController {
-  constructor(private readonly accountService: AccountService) { }
+  constructor(private readonly accountService: AccountService) {}
 
   @Get()
   async getAccount(@Query() query: Prisma.AccountWhereUniqueInput) {
@@ -34,7 +33,10 @@ export class AccountController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateAccountDto: Prisma.AccountUpdateInput) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAccountDto: Prisma.AccountUpdateInput,
+  ) {
     return this.accountService.update(id, updateAccountDto);
   }
 

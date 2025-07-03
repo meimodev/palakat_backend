@@ -3,7 +3,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { Prisma } from '@prisma/client';
 @Injectable()
 export class AccountService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getAccount(params: Prisma.AccountWhereUniqueInput) {
     const { phone, id } = params;

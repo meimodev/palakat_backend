@@ -61,7 +61,7 @@ export class MembershipService {
         column: true,
       },
     });
-    
+
     return {
       message: 'Membership retrieved successfully',
       data: membership,
@@ -72,7 +72,6 @@ export class MembershipService {
     id: number,
     updateMembershipDto: Prisma.MembershipUpdateInput,
   ): Promise<{ message: string; data: Membership }> {
-
     const membership = await this.prisma.membership.update({
       where: { id },
       data: updateMembershipDto,

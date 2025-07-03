@@ -3,7 +3,11 @@ import { PrismaClient, Gender } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  if (!['localhost', '127.0.0.1'].some((host) => process.env.DATABASE_URL?.includes(host))) {
+  if (
+    !['localhost', '127.0.0.1'].some((host) =>
+      process.env.DATABASE_URL?.includes(host),
+    )
+  ) {
     console.error('❌ Seeding is only allowed on local environments.');
     process.exit(1);
   }
@@ -13,7 +17,7 @@ async function main() {
   await prisma.column.deleteMany();
   await prisma.church.deleteMany();
   await prisma.account.deleteMany();
-  
+
   console.log('🧹 Cleaned existing data...');
 
   // 1. Create Accounts
@@ -128,10 +132,7 @@ async function main() {
       longitude: '106.8650',
       address: 'Jl. Medan Merdeka Timur, Jakarta Pusat',
       columns: {
-        create: [
-          { name: 'Kolom Keluarga' },
-          { name: 'Kolom Single' },
-        ],
+        create: [{ name: 'Kolom Keluarga' }, { name: 'Kolom Single' }],
       },
     },
     include: { columns: true },
@@ -168,7 +169,7 @@ async function main() {
         sidi: true,
       },
     }),
-    
+
     // Jane Smith -> GPIB Immanuel, Kolom Single
     prisma.membership.create({
       data: {
@@ -179,7 +180,7 @@ async function main() {
         sidi: false,
       },
     }),
-    
+
     // Michael Johnson -> GKI Pluit, Kolom Profesional
     prisma.membership.create({
       data: {
@@ -190,7 +191,7 @@ async function main() {
         sidi: true,
       },
     }),
-    
+
     // Sarah Wilson -> GKI Pondok Indah, Kolom Pemuda
     prisma.membership.create({
       data: {
@@ -201,7 +202,7 @@ async function main() {
         sidi: false,
       },
     }),
-    
+
     // David Brown -> GPIB Immanuel, Kolom Keluarga
     prisma.membership.create({
       data: {
@@ -219,19 +220,23 @@ async function main() {
   // Display available accounts without membership
   const accountsWithoutMembership = await prisma.account.findMany({
     where: {
-      membership: null
-    }
+      membership: null,
+    },
   });
 
-  console.log(`\n👤 Accounts available for new memberships (${accountsWithoutMembership.length}):`);
+  console.log(
+    `\n👤 Accounts available for new memberships (${accountsWithoutMembership.length}):`,
+  );
   accountsWithoutMembership.forEach((account) => {
-    console.log(`   - ID: ${account.id}, Name: ${account.name}, Phone: ${account.phone}`);
+    console.log(
+      `   - ID: ${account.id}, Name: ${account.name}, Phone: ${account.phone}`,
+    );
   });
 
   // 4. Display summary
   console.log('\n📊 Seed Summary:');
   console.log('================');
-  
+
   const allChurches = await prisma.church.findMany({
     include: {
       columns: true,
@@ -247,11 +252,15 @@ async function main() {
   allChurches.forEach((church) => {
     console.log(`\n🏛️  ${church.name}`);
     console.log(`   📍 ${church.address}`);
-    console.log(`   📊 Columns: ${church.columns.map(c => c.name).join(', ')}`);
+    console.log(
+      `   📊 Columns: ${church.columns.map((c) => c.name).join(', ')}`,
+    );
     console.log(`   👥 Members: ${church.memberships.length}`);
-    
+
     church.memberships.forEach((membership) => {
-      console.log(`      - ${membership.account.name} (${membership.column.name}) - Baptize: ${membership.baptize}, Sidi: ${membership.sidi}`);
+      console.log(
+        `      - ${membership.account.name} (${membership.column.name}) - Baptize: ${membership.baptize}, Sidi: ${membership.sidi}`,
+      );
     });
   });
 
