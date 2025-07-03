@@ -25,6 +25,10 @@ export class PrismaExceptionFilter extends BaseExceptionFilter {
         case 'P2002':
           message = `Duplicate input attempt on unique column`;
           code = HttpStatus.BAD_REQUEST;
+          break;
+        case 'P2025':
+          message = `Record not found`;
+          code = HttpStatus.NOT_FOUND;
       }
       response.status(code).json({
         message: message,
