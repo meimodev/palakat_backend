@@ -1,4 +1,4 @@
-import { Controller, Get, ParseIntPipe, Query, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Query, UseGuards, Param, Delete } from '@nestjs/common';
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 
@@ -27,5 +27,10 @@ export class ActivitiesController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.activitiesService.findOne(id);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number){
+    return this.activitiesService.remove(id);
   }
 }

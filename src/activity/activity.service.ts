@@ -34,4 +34,13 @@ export class ActivitiesService {
       data: activity
     }
   }
+
+  async remove(id: number){
+    await this.prisma.activity.delete({
+      where: {id}
+    })
+    return {
+      message : 'Activity deleted successfully',
+    }
+  }
 }
