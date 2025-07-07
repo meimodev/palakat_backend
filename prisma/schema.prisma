@@ -23,7 +23,6 @@ model Church {
   updatedAt DateTime @updatedAt
   memberships Membership[]
   columns Column[]
-  activities Activity[]
 }
 
 model Column {
@@ -34,7 +33,6 @@ model Column {
   memberships Membership[]
   church Church @relation(fields: [churchId], references: [id])
   churchId Int
-  activities Activity[]
 }
 
 model Membership {
@@ -61,19 +59,13 @@ model Account {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   membership Membership?
-  activities Activity[]
 }
 
 model Activity {
   id           String       @id @default(uuid())
-  account      Account      @relation(fields: [accountId], references: [id])
-  accountId    Int
   membership   Membership   @relation(fields: [membershipId], references: [id])
-  membershipId Int
-  column       Column       @relation(fields: [columnId], references: [id])
-  columnId     Int
-  church       Church       @relation(fields: [churchId], references: [id])
-  churchId     Int
+  membershipId Int       
+
   bipra        Bipra
   title        String
   location     String?
