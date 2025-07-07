@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Activity, Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
@@ -41,6 +42,25 @@ export class ActivitiesService {
     })
     return {
       message : 'Activity deleted successfully',
+    }
+  }
+
+  async create(createActivityDto: Prisma.ActivityCreateInput): Promise<{ message: string; data: Activity }> {
+    const activity = await this.prisma.activity.create({
+      data: createActivityDto,
+      include: {
+        membership:{
+          include: {
+            account: true,
+            church: true,
+            column: true
+          }
+        }
+      }
+    })
+    return {
+      message: 'Activity created successfully',
+      data: activity
     }
   }
 }
