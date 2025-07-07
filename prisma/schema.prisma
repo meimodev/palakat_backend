@@ -62,7 +62,7 @@ model Account {
 }
 
 model Activity {
-  id           String       @id @default(uuid())
+  id           Int       @id @default(autoincrement())
   membership   Membership   @relation(fields: [membershipId], references: [id])
   membershipId Int       
 
