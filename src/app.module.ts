@@ -6,7 +6,7 @@ import { PrismaModule } from 'nestjs-prisma';
 import { AccountModule } from './account/account.module';
 import { PrismaExceptionFilter } from './exception.filter';
 import { MembershipModule } from './membership/membership.module';
-import { ActivitiesModule } from './activities/activities.module';
+import { ActivitiesModule } from './activity/activity.module';
 
 @Module({
   imports: [
