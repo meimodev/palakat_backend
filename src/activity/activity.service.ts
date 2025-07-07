@@ -26,7 +26,7 @@ export class ActivitiesService {
   }
 
   async findOne(id: number) {
-    const activity = await this.prisma.activity.findUnique({
+    const activity = await this.prisma.activity.findUniqueOrThrow({
       where: { id }
     })
     return {
