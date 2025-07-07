@@ -1,4 +1,4 @@
-import { Controller, Get, ParseIntPipe, Query, UseGuards, Param, Delete, Post, Body } from '@nestjs/common';
+import { Controller, Get, ParseIntPipe, Query, UseGuards, Param, Delete, Post, Body, Patch } from '@nestjs/common';
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { Prisma } from '@prisma/client';
@@ -40,4 +40,8 @@ export class ActivitiesController {
     return this.activitiesService.create(createActivityDto);
   }
 
+  @Patch(':id')
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateActivityDto: Prisma.ActivityUpdateInput) {
+    return this.activitiesService.update(id, updateActivityDto);
+  }
 }

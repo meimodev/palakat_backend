@@ -49,17 +49,22 @@ export class ActivitiesService {
     const activity = await this.prisma.activity.create({
       data: createActivityDto,
       include: {
-        membership:{
-          include: {
-            account: true,
-            church: true,
-            column: true
-          }
-        }
+        membership:{}
       }
     })
     return {
       message: 'Activity created successfully',
+      data: activity
+    }
+  }
+
+  async update(id: number, updateActivityDto: Prisma.ActivityUpdateInput): Promise<{ message: string; data: Activity }> {
+    const activity = await this.prisma.activity.update({
+      where: { id },
+      data: updateActivityDto,
+    })
+    return {
+      message: 'Activity updated successfully',
       data: activity
     }
   }
