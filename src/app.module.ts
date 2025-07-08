@@ -6,6 +6,7 @@ import { PrismaModule } from 'nestjs-prisma';
 import { AccountModule } from './account/account.module';
 import { PrismaExceptionFilter } from './exception.filter';
 import { MembershipModule } from './membership/membership.module';
+import { ActivitiesModule } from './activity/activity.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MembershipModule } from './membership/membership.module';
     AuthModule,
     AccountModule,
     MembershipModule,
+    ActivitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter],
