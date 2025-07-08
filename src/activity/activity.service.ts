@@ -10,62 +10,67 @@ export class ActivitiesService {
     membership_id?: number,
     church_id?: number,
     column_id?: number,
-  ){
+  ) {
     const activity = await this.prisma.activity.findMany({
       where: {
         membershipId: membership_id,
-        membership:{
+        membership: {
           churchId: church_id,
-          columnId: column_id
-        }
-      }
-    })
+          columnId: column_id,
+        },
+      },
+    });
     return {
       message: 'Activities retrieved successfully',
-      data: activity
-    }
+      data: activity,
+    };
   }
 
   async findOne(id: number) {
     const activity = await this.prisma.activity.findUniqueOrThrow({
-      where: { id }
-    })
+      where: { id },
+    });
     return {
       message: 'Activity retrieved successfully',
-      data: activity
-    }
+      data: activity,
+    };
   }
 
-  async remove(id: number){
+  async remove(id: number) {
     await this.prisma.activity.delete({
-      where: {id}
-    })
+      where: { id },
+    });
     return {
-      message : 'Activity deleted successfully',
-    }
+      message: 'Activity deleted successfully',
+    };
   }
 
-  async create(createActivityDto: Prisma.ActivityCreateInput): Promise<{ message: string; data: Activity }> {
+  async create(
+    createActivityDto: Prisma.ActivityCreateInput,
+  ): Promise<{ message: string; data: Activity }> {
     const activity = await this.prisma.activity.create({
       data: createActivityDto,
       include: {
-        membership:{}
-      }
-    })
+        membership: {},
+      },
+    });
     return {
       message: 'Activity created successfully',
-      data: activity
-    }
+      data: activity,
+    };
   }
 
-  async update(id: number, updateActivityDto: Prisma.ActivityUpdateInput): Promise<{ message: string; data: Activity }> {
+  async update(
+    id: number,
+    updateActivityDto: Prisma.ActivityUpdateInput,
+  ): Promise<{ message: string; data: Activity }> {
     const activity = await this.prisma.activity.update({
       where: { id },
       data: updateActivityDto,
-    })
+    });
     return {
       message: 'Activity updated successfully',
-      data: activity
-    }
+      data: activity,
+    };
   }
 }

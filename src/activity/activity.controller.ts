@@ -1,4 +1,15 @@
-import { Controller, Get, ParseIntPipe, Query, UseGuards, Param, Delete, Post, Body, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+  Param,
+  Delete,
+  Post,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { Prisma } from '@prisma/client';
@@ -13,16 +24,12 @@ export class ActivitiesController {
     @Query('membership_id') membershipId?: string,
     @Query('church_id') churchId?: string,
     @Query('column_id') columnId?: string,
-  ){
+  ) {
     const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
     const church_id = churchId ? parseInt(churchId, 10) : undefined;
     const column_id = columnId ? parseInt(columnId, 10) : undefined;
 
-    return this.activitiesService.findAll(
-      membership_id,
-      church_id,
-      column_id,
-    )
+    return this.activitiesService.findAll(membership_id, church_id, column_id);
   }
 
   @Get(':id')
@@ -31,7 +38,7 @@ export class ActivitiesController {
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number){
+  async remove(@Param('id', ParseIntPipe) id: number) {
     return this.activitiesService.remove(id);
   }
 
@@ -41,7 +48,10 @@ export class ActivitiesController {
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateActivityDto: Prisma.ActivityUpdateInput) {
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateActivityDto: Prisma.ActivityUpdateInput,
+  ) {
     return this.activitiesService.update(id, updateActivityDto);
   }
 }
