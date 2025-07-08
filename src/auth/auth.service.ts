@@ -21,30 +21,13 @@ export class AuthService {
     };
   }
 
-  async validateUser(phone: string) {
-    try {
-      const account = await this.prisma.account.findUnique({
-        where: { phone },
-      });
-      if (account) {
-        return {
-          statusCode: 200,
-          message: 'User found',
-          data: account,
-        };
-      } else {
-        return {
-          statusCode: 404,
-          message: 'User not found',
-          data: null,
-        };
-      }
-    } catch (error) {
-      return {
-        statusCode: 500,
-        message: `User validation failed`,
-        data: null,
-      };
-    }
+  async validate(phone: string) {
+    const account = await this.prisma.account.findUniqueOrThrow({
+      where: { phone },
+    });
+    return {
+      message: 'OK',
+      data: account,
+    };
   }
 }

@@ -15,8 +15,8 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('validate-user')
-  async validateUser(phone: string) {
-    return this.authService.validateUser(phone);
+  @Post('validate')
+  async validate(phone: string) {
+    return this.authService.validate(phone);
   }
 }
