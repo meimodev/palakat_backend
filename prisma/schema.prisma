@@ -79,6 +79,27 @@ model Activity {
   updatedAt    DateTime     @updatedAt
 }
 
+model Songs {
+  id Int @default(autoincrement()) @id
+  title String
+  index Int
+  book Book
+  parts SongParts[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([index, book])
+}
+
+model SongParts {
+  id Int @default(autoincrement()) @id
+  index Int
+  name String
+  content String @db.Text
+
+  songId Int @map("song_id")
+  song Songs @relation(fields: [songId], references: [id])
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -97,4 +118,11 @@ enum ActivityType {
   SERVICE
   EVENT
   ANNOUNCEMENT
+}
+
+enum Book {
+  NKB
+  NNBT
+  KJ
+  DSL
 }
