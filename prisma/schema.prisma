@@ -85,6 +85,7 @@ model Songs {
   index Int
   book Book
   parts SongParts[]
+  link String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@unique([index, book])

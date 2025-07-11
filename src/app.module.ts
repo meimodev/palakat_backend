@@ -7,6 +7,7 @@ import { AccountModule } from './account/account.module';
 import { PrismaExceptionFilter } from './exception.filter';
 import { MembershipModule } from './membership/membership.module';
 import { ActivitiesModule } from './activity/activity.module';
+import { SongsModule } from './songs/songs.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ActivitiesModule } from './activity/activity.module';
     AccountModule,
     MembershipModule,
     ActivitiesModule,
+    SongsModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter],
