@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
@@ -56,6 +57,16 @@ export class ChurchService {
     })
     return {
       message: 'Church deleted successfully',
+    };
+  }
+
+  async create(createChurchDto: Prisma.ChurchCreateInput){
+    const church = await this.prisma.church.create({
+      data: createChurchDto,
+    })
+    return {
+      message: 'Church created successfully',
+      data: church,
     };
   }
 

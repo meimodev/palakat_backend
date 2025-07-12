@@ -1,5 +1,6 @@
-import { Controller, Delete, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ChurchService } from './church.service';
+import { Prisma } from '@prisma/client';
 
 @Controller('church')
 export class ChurchController {
@@ -26,5 +27,10 @@ export class ChurchController {
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.churchService.remove(id);
+  }
+
+  @Post()
+  async create(@Body() createchurchDto: Prisma.ChurchCreateInput) {
+    return this.churchService.create(createchurchDto);
   }
 }
