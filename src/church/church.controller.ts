@@ -22,4 +22,9 @@ export class ChurchController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.churchService.findOne(id);
   }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return this.churchService.remove(id);
+  }
 }

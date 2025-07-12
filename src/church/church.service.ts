@@ -49,6 +49,17 @@ export class ChurchService {
     }
   }
 
+  
+  async remove(id: number) {
+    const church = await this.prisma.church.delete({
+      where: { id },
+    })
+    return {
+      message: 'Church deleted successfully',
+      data: church,
+    };
+  }
+
   // sakit pala abang 
   // Rumus Haversine 
   private getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
