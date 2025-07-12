@@ -51,12 +51,11 @@ export class ChurchService {
 
   
   async remove(id: number) {
-    const church = await this.prisma.church.delete({
+  await this.prisma.church.delete({
       where: { id },
     })
     return {
       message: 'Church deleted successfully',
-      data: church,
     };
   }
 
