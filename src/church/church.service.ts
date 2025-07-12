@@ -70,6 +70,17 @@ export class ChurchService {
     };
   }
 
+  async update(id: number, updateChurchDto: Prisma.ChurchUpdateInput) {
+    const church = await this.prisma.church.update({
+      where: { id },
+      data: updateChurchDto,
+    })
+    return {
+      message: 'Church updated successfully',
+      data: church,
+    };
+  }
+
   // sakit pala abang 
   // Rumus Haversine 
   private getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {

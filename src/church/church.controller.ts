@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ChurchService } from './church.service';
 import { Prisma } from '@prisma/client';
 
@@ -32,5 +32,10 @@ export class ChurchController {
   @Post()
   async create(@Body() createchurchDto: Prisma.ChurchCreateInput) {
     return this.churchService.create(createchurchDto);
+  }
+
+  @Patch(':id')
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateChurchDto: Prisma.ChurchUpdateInput) {
+    return this.churchService.update(id, updateChurchDto);
   }
 }
