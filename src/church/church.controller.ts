@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ChurchService } from './church.service';
 
 @Controller('church')
@@ -16,5 +16,10 @@ export class ChurchController {
       latitude,
       longitude,
     });
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.churchService.findOne(id);
   }
 }

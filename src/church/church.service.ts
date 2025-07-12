@@ -39,6 +39,16 @@ export class ChurchService {
     };
   }
 
+  async findOne(id: number ){
+    const church = await this.prisma.church.findUniqueOrThrow({
+      where: { id },
+    });
+    return {
+      message: 'Church fetched successfully',
+      data: church,
+    }
+  }
+
   // sakit pala abang 
   // Rumus Haversine 
   private getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
