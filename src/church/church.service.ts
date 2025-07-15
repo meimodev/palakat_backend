@@ -5,7 +5,11 @@ import { PrismaService } from 'nestjs-prisma';
 @Injectable()
 export class ChurchService {
   constructor(private prisma: PrismaService) {}
-  async getChurches(params: { search?: string; latitude?: string; longitude?: string }) {
+  async getChurches(params: {
+    search?: string;
+    latitude?: string;
+    longitude?: string;
+  }) {
     const { search, latitude, longitude } = params;
     const lat = latitude ? parseFloat(latitude) : null;
     const lng = longitude ? parseFloat(longitude) : null;
@@ -15,9 +19,14 @@ export class ChurchService {
     // Sort by distance if lat/long provided
     if (lat != null && lng != null) {
       churches = churches
-        .map(church => ({
+        .map((church) => ({
           ...church,
-          distance: this.getDistance(lat, lng, parseFloat(church.latitude), parseFloat(church.longitude)),
+          distance: this.getDistance(
+            lat,
+            lng,
+            parseFloat(church.latitude),
+            parseFloat(church.longitude),
+          ),
         }))
         .sort((a, b) => a.distance - b.distance);
     } else {
@@ -28,7 +37,7 @@ export class ChurchService {
     if (search && search.length >= 3) {
       const keyword = search.toLowerCase();
       churches = churches.filter(
-        c =>
+        (c) =>
           c.name.toLowerCase().includes(keyword) ||
           c.address.toLowerCase().includes(keyword),
       );
@@ -40,30 +49,29 @@ export class ChurchService {
     };
   }
 
-  async findOne(id: number ){
+  async findOne(id: number) {
     const church = await this.prisma.church.findUniqueOrThrow({
       where: { id },
     });
     return {
       message: 'Church fetched successfully',
       data: church,
-    }
+    };
   }
 
-  
   async remove(id: number) {
-  await this.prisma.church.delete({
+    await this.prisma.church.delete({
       where: { id },
-    })
+    });
     return {
       message: 'Church deleted successfully',
     };
   }
 
-  async create(createChurchDto: Prisma.ChurchCreateInput){
+  async create(createChurchDto: Prisma.ChurchCreateInput) {
     const church = await this.prisma.church.create({
       data: createChurchDto,
-    })
+    });
     return {
       message: 'Church created successfully',
       data: church,
@@ -74,16 +82,21 @@ export class ChurchService {
     const church = await this.prisma.church.update({
       where: { id },
       data: updateChurchDto,
-    })
+    });
     return {
       message: 'Church updated successfully',
       data: church,
     };
   }
 
-  // sakit pala abang 
-  // Rumus Haversine 
-  private getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  // sakit pala abang
+  // Rumus Haversine
+  private getDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const toRad = (value: number) => (value * Math.PI) / 180;
     const R = 6371; // Earth radius in km
 
@@ -91,9 +104,7 @@ export class ChurchService {
     const dLon = toRad(lon2 - lon1);
     const a =
       Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) ** 2;
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;

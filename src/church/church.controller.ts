@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ChurchService } from './church.service';
 import { Prisma } from '@prisma/client';
 
@@ -11,7 +21,7 @@ export class ChurchController {
     @Query('search') search?: string,
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
-  ){
+  ) {
     return this.churchService.getChurches({
       search,
       latitude,
@@ -35,7 +45,10 @@ export class ChurchController {
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateChurchDto: Prisma.ChurchUpdateInput) {
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateChurchDto: Prisma.ChurchUpdateInput,
+  ) {
     return this.churchService.update(id, updateChurchDto);
   }
 }
