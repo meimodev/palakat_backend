@@ -8,6 +8,7 @@ import { PrismaExceptionFilter } from './exception.filter';
 import { MembershipModule } from './membership/membership.module';
 import { ActivitiesModule } from './activity/activity.module';
 import { ChurchModule } from './church/church.module';
+import { HelperService } from '../common/helper/helper.service';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ChurchModule } from './church/church.module';
     ChurchModule,
   ],
   controllers: [AppController],
-  providers: [AppService, Logger, PrismaExceptionFilter],
+  providers: [AppService, Logger, PrismaExceptionFilter, HelperService],
+  exports: [HelperService],
 })
 export class AppModule {}
