@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
+import { HelperService } from 'common/helper/helper.service';
 
 @Injectable()
 export class ChurchService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private helperService: HelperService) {}
   async getChurches(params: {
     search?: string;
     latitude?: string;
@@ -21,7 +22,7 @@ export class ChurchService {
       churches = churches
         .map((church) => ({
           ...church,
-          distance: this.getDistance(
+          distance: this.helperService.calculateDistance(
             lat,
             lng,
             parseFloat(church.latitude),
@@ -87,26 +88,5 @@ export class ChurchService {
       message: 'Church updated successfully',
       data: church,
     };
-  }
-
-  // sakit pala abang
-  // Rumus Haversine
-  private getDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ): number {
-    const toRad = (value: number) => (value * Math.PI) / 180;
-    const R = 6371; // Earth radius in km
-
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   }
 }
