@@ -403,8 +403,12 @@ async function main() {
       );
       console.log(`        📅 Activities: ${membership.activities.length}`);
       membership.activities.forEach((activity) => {
-        const dateStr = activity.date ? activity.date.toLocaleDateString() : 'No date';
-        console.log(`           • ${activity.title} (${activity.activityType}) - ${dateStr}`);
+        const dateStr = activity.date
+          ? activity.date.toLocaleDateString()
+          : 'No date';
+        console.log(
+          `           • ${activity.title} (${activity.activityType}) - ${dateStr}`,
+        );
       });
     });
   });
