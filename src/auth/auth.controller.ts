@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
@@ -15,8 +15,8 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('validate')
-  async validate(phone: string) {
+  @Get('validate')
+  async validate(@Query('phone') phone?: string) {
     return this.authService.validate(phone);
   }
 }
