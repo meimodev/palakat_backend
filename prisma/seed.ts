@@ -9,7 +9,7 @@ async function main() {
     )
   ) {
     console.error('❌ Seeding is only allowed on local environments.');
-    process.exit(1);
+    process.exit(0);
   }
 
   console.log('🌱 Starting seed...');
