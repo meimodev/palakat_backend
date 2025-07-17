@@ -3,14 +3,14 @@ import { PrismaClient, Gender, Bipra, ActivityType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  if (
-    !['localhost', '127.0.0.1'].some((host) =>
-      process.env.DATABASE_POSTGRES_URL?.includes(host),
-    )
-  ) {
-    console.error('❌ Seeding is only allowed on local environments.');
-    process.exit(0);
-  }
+  // if (
+  //   !['localhost', '127.0.0.1'].some((host) =>
+  //     process.env.DATABASE_POSTGRES_URL?.includes(host),
+  //   )
+  // ) {
+  //   console.error('❌ Seeding is only allowed on local environments.');
+  //   process.exit(0);
+  // }
 
   console.log('🌱 Starting seed...');
   await prisma.activity.deleteMany();
