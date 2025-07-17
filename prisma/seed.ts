@@ -1,17 +1,23 @@
 import { PrismaClient, Gender, Bipra, ActivityType } from '@prisma/client';
+import * as process from 'node:process';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // if (
-  //   !['localhost', '127.0.0.1'].some((host) =>
-  //     process.env.DATABASE_POSTGRES_URL?.includes(host),
-  //   )
-  // ) {
-  //   console.error('❌ Seeding is only allowed on local environments.');
-  //   process.exit(0);
-  // }
-
+  const inServerEnvironment = !['localhost', '127.0.0.1'].some((host) =>
+    process.env.DATABASE_POSTGRES_URL?.includes(host),
+  );
+  const forceSeeding = process.env.FORCE_SEEDING == 'true';
+  if (inServerEnvironment) {
+    if (forceSeeding) {
+      console.error(
+        ' ⚠️⚠️⚠️ Force seeding!. hope you know what will happened ⚠️⚠️⚠️',
+      );
+    } else {
+      console.error('❌ Seeding is only allowed on local environments.');
+      process.exit(0);
+    }
+  }
   console.log('🌱 Starting seed...');
   try {
     await prisma.activity.deleteMany();
@@ -19,11 +25,10 @@ async function main() {
     await prisma.column.deleteMany();
     await prisma.church.deleteMany();
     await prisma.account.deleteMany();
+    console.log('🧹 Cleaned existing data...');
   } catch (e) {
     console.log('🧹Error while cleaning the current data... ', e);
   }
-
-  console.log('🧹 Cleaned existing data...');
 
   // 1. Create Accounts
   const accounts = await Promise.all([
