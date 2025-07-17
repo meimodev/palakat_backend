@@ -13,11 +13,15 @@ async function main() {
   // }
 
   console.log('🌱 Starting seed...');
-  await prisma.activity.deleteMany();
-  await prisma.membership.deleteMany();
-  await prisma.column.deleteMany();
-  await prisma.church.deleteMany();
-  await prisma.account.deleteMany();
+  try {
+    await prisma.activity.deleteMany();
+    await prisma.membership.deleteMany();
+    await prisma.column.deleteMany();
+    await prisma.church.deleteMany();
+    await prisma.account.deleteMany();
+  } catch (e) {
+    console.log('🧹Error while cleaning the current data... ', e);
+  }
 
   console.log('🧹 Cleaned existing data...');
 
