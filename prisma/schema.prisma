@@ -31,7 +31,7 @@ model Column {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   memberships Membership[]
-  church Church @relation(fields: [churchId], references: [id])
+  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
   churchId Int
 }
 
@@ -43,9 +43,9 @@ model Membership {
   updatedAt DateTime @updatedAt
   account Account @relation(fields: [accountId], references: [id])
   accountId Int @unique
-  column Column @relation(fields: [columnId], references: [id])
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
   columnId Int
-  church Church @relation(fields: [churchId], references: [id])
+  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
   churchId Int
   activities Activity[]
 }
@@ -63,7 +63,7 @@ model Account {
 
 model Activity {
   id           Int       @id @default(autoincrement())
-  membership   Membership   @relation(fields: [membershipId], references: [id])
+  membership   Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   membershipId Int       
 
   bipra        Bipra
