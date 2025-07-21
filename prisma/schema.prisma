@@ -79,26 +79,26 @@ model Activity {
   updatedAt    DateTime     @updatedAt
 }
 
-model Songs {
+model Song {
   id Int @default(autoincrement()) @id
   title String
   index Int
   book Book
-  parts SongParts[]
+  parts SongPart[]
   link String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  @@unique([index, book])
+  @@unique([index])
 }
 
-model SongParts {
+model SongPart {
   id Int @default(autoincrement()) @id
   index Int
   name String
   content String @db.Text
 
-  songId Int @map("song_id")
-  song Songs @relation(fields: [songId], references: [id])
+  songId Int
+  song Song @relation(fields: [songId], references: [id])
 }
 
 enum Gender {

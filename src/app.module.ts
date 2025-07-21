@@ -7,7 +7,7 @@ import { AccountModule } from './account/account.module';
 import { PrismaExceptionFilter } from './exception.filter';
 import { MembershipModule } from './membership/membership.module';
 import { ActivitiesModule } from './activity/activity.module';
-import { SongsModule } from './songs/songs.module';
+import { SongModule } from './song/song.module';
 
 @Module({
   imports: [
@@ -16,9 +16,9 @@ import { SongsModule } from './songs/songs.module';
     AccountModule,
     MembershipModule,
     ActivitiesModule,
-    SongsModule,
+    SongModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter],
 })
-export class AppModule {}
+export class AppModule { }

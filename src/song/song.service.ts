@@ -3,23 +3,21 @@ import { PrismaService } from 'nestjs-prisma';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class SongsService {
+export class SongService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(createSongDto: Prisma.SongsCreateInput) {
-        const song = await this.prisma.songs.create({
+    async create(createSongDto: Prisma.SongCreateInput) {
+        await this.prisma.song.create({
             data: createSongDto,
         });
-        if (song) {
-            return {
-                message: 'OK',
-                data: song,
-            };
-        }
+        return {
+            message: 'OK',
+            data: createSongDto,
+        };
     }
 
     async findAll(text?: string) {
-        const where: Prisma.SongsWhereInput = {};
+        const where: Prisma.SongWhereInput = {};
 
         if (text) {
             where.OR = [
@@ -42,7 +40,7 @@ export class SongsService {
             ]
         }
 
-        const songs = await this.prisma.songs.findMany({
+        const song = await this.prisma.song.findMany({
             where,
             include: {
                 parts: true,
@@ -51,21 +49,17 @@ export class SongsService {
 
         return {
             message: 'OK',
-            data: songs,
+            data: song,
         };
     }
 
     async findOne(id: number) {
-        const song = await this.prisma.songs.findUnique({
+        const song = await this.prisma.song.findUniqueOrThrow({
             where: { id: id },
             include: {
                 parts: true,
             },
         });
-
-        if (!song) {
-            throw new Error('Song not found');
-        }
 
         return {
             message: 'OK',
@@ -73,29 +67,23 @@ export class SongsService {
         };
     }
 
-    async update(id: number, updateSongDto: Prisma.SongsUpdateInput) {
-        const song = await this.prisma.songs.update({
+    async update(id: number, updateSongDto: Prisma.SongUpdateInput) {
+        await this.prisma.song.update({
             where: { id: id },
             data: updateSongDto,
         });
-
-        if (song) {
-            return {
-                message: 'OK',
-                data: song,
-            };
-        }
+        return {
+            message: 'OK',
+            data: updateSongDto,
+        };
     }
 
     async delete(id: number) {
-        const song = await this.prisma.songs.delete({
+        await this.prisma.song.delete({
             where: { id: id },
         });
-
-        if (song) {
-            return {
-                message: 'OK',
-            };
-        }
+        return {
+            message: 'OK',
+        };
     }
 }
