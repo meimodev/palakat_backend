@@ -9,6 +9,7 @@ import { MembershipModule } from './membership/membership.module';
 import { ActivitiesModule } from './activity/activity.module';
 import { ChurchModule } from './church/church.module';
 import { HelperService } from '../common/helper/helper.service';
+import { SongModule } from './song/song.module';
 
 @Module({
   imports: [
@@ -18,9 +19,10 @@ import { HelperService } from '../common/helper/helper.service';
     MembershipModule,
     ActivitiesModule,
     ChurchModule,
+    SongModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],
   exports: [HelperService],
 })
-export class AppModule {}
+export class AppModule { }
