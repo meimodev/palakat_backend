@@ -49,4 +49,16 @@ export class ColumnService {
         data: column,
     };
   }
+
+  async update(id : number,updateColumn: Prisma.ColumnUpdateInput){
+    const column = await this.prismaService.column.update({
+        where:{id},
+        data : updateColumn,
+        include: {church : true}
+    })
+    return {
+        message : 'column updated successfully',
+        data : column
+    }
+  }
 }
