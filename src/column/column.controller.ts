@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ColumnService } from './column.service';
 import { Prisma } from '@prisma/client';
 
@@ -29,8 +39,9 @@ export class ColumnController {
 
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number, @Body() updateColumn: Prisma.ColumnUpdateInput){
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateColumn: Prisma.ColumnUpdateInput,
+  ) {
     return this.columnService.update(id, updateColumn);
   }
 }
-

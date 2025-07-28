@@ -27,4 +27,4 @@ import { ColumnModule } from './column/column.module';
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],
   exports: [HelperService],
 })
-export class AppModule { }
+export class AppModule {}

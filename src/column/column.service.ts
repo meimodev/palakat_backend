@@ -20,15 +20,15 @@ export class ColumnService {
 
   async findOne(id: number) {
     const column = await this.prismaService.column.findUniqueOrThrow({
-        where: { id },
+      where: { id },
     });
     return {
-        message: 'Column fetched successfully',
-        data: column,
+      message: 'Column fetched successfully',
+      data: column,
     };
   }
 
-  async remove(id:number): Promise<{ message: string }> {
+  async remove(id: number): Promise<{ message: string }> {
     await this.prismaService.column.delete({
       where: { id },
     });
@@ -37,28 +37,28 @@ export class ColumnService {
     };
   }
 
-  async create(createColumn: Prisma.ColumnCreateInput ){
+  async create(createColumn: Prisma.ColumnCreateInput) {
     const column = await this.prismaService.column.create({
-        data: createColumn,
-        include : {
-            church: true,
-        }
-    })
+      data: createColumn,
+      include: {
+        church: true,
+      },
+    });
     return {
-        message: 'Column created successfully',
-        data: column,
+      message: 'Column created successfully',
+      data: column,
     };
   }
 
-  async update(id : number,updateColumn: Prisma.ColumnUpdateInput){
+  async update(id: number, updateColumn: Prisma.ColumnUpdateInput) {
     const column = await this.prismaService.column.update({
-        where:{id},
-        data : updateColumn,
-        include: {church : true}
-    })
+      where: { id },
+      data: updateColumn,
+      include: { church: true },
+    });
     return {
-        message : 'column updated successfully',
-        data : column
-    }
+      message: 'column updated successfully',
+      data: column,
+    };
   }
 }
