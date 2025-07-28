@@ -26,4 +26,13 @@ export class ColumnService {
         data: column,
     };
   }
+
+  async remove(id:number): Promise<{ message: string }> {
+    await this.prismaService.column.delete({
+      where: { id },
+    });
+    return {
+      message: 'Column deleted successfully',
+    };
+  }
 }

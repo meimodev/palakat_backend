@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ColumnService } from './column.service';
 
 @Controller('column')
@@ -14,6 +14,11 @@ export class ColumnController {
   @Get(':id')
   async getColumn(@Param('id', ParseIntPipe) id: number) {
     return this.columnService.findOne(id);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return this.columnService.remove(id);
   }
 }
 
