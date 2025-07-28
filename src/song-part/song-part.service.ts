@@ -36,14 +36,32 @@ export class SongPartService {
     }
 
     async findOne(id: number) {
-        return this.prisma.songPart.findUnique({ where: { id } });
+        const Songpart = await this.prisma.songPart.findUniqueOrThrow({
+            where: { id },
+        });
+        return {
+            message: 'OK',
+            data: Songpart,
+        };
     }
 
-    async update(id: number, data: Prisma.SongPartUpdateInput) {
-        return this.prisma.songPart.update({ where: { id }, data });
+    async update(id: number, updateSongPartDto: Prisma.SongPartUpdateInput) {
+        await this.prisma.songPart.update({
+            where: { id: id },
+            data: updateSongPartDto
+        });
+        return {
+            message: 'OK',
+            data: updateSongPartDto,
+        };
     }
 
     async delete(id: number) {
-        return this.prisma.songPart.delete({ where: { id } });
+        await this.prisma.songPart.delete({
+            where: { id: id },
+        });
+        return {
+            message: 'OK',
+        };
     }
 }
