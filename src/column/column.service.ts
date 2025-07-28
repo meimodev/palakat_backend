@@ -16,4 +16,14 @@ export class ColumnService {
       data: columns,
     };
   }
+
+  async findOne(id: number) {
+    const column = await this.prismaService.column.findUniqueOrThrow({
+        where: { id },
+    });
+    return {
+        message: 'Column fetched successfully',
+        data: column,
+    };
+  }
 }
