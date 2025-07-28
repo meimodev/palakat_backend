@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
@@ -36,4 +37,16 @@ export class ColumnService {
     };
   }
 
+  async create(createColumn: Prisma.ColumnCreateInput ){
+    const column = await this.prismaService.column.create({
+        data: createColumn,
+        include : {
+            church: true,
+        }
+    })
+    return {
+        message: 'Column created successfully',
+        data: column,
+    };
+  }
 }
