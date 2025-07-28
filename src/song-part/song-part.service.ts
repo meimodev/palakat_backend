@@ -29,7 +29,10 @@ export class SongPartService {
         const parts = await this.prisma.songPart.findMany({
             where,
         });
-        return { message: `Ditemukan ${parts.length} bagian lagu.`, data: parts };
+        return {
+            message: 'OK',
+            data: parts
+        };
     }
 
     async findOne(id: number) {
