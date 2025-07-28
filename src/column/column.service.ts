@@ -5,10 +5,10 @@ import { PrismaService } from 'nestjs-prisma';
 export class ColumnService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getColumns(church_id?: number) {
+  async getColumns(churchId?: number) {
     const columns = await this.prismaService.column.findMany({
       where: {
-        churchId: church_id,
+        churchId: churchId,
       },
     });
     return {
@@ -35,4 +35,5 @@ export class ColumnService {
       message: 'Column deleted successfully',
     };
   }
+
 }
