@@ -5,7 +5,10 @@ import { HelperService } from 'common/helper/helper.service';
 
 @Injectable()
 export class ChurchService {
-  constructor(private prisma: PrismaService, private helperService: HelperService) {}
+  constructor(
+    private prisma: PrismaService,
+    private helperService: HelperService,
+  ) {}
   async getChurches(params: {
     search?: string;
     latitude?: string;
