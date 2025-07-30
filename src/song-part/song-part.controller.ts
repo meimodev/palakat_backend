@@ -18,12 +18,14 @@ import { SongPartService } from './song-part.service';
 export class SongPartController {
   constructor(private readonly songPartService: SongPartService) {}
 
-  @Post(':song_id')
+  @Post()
   async create(
-    @Param('song_id', ParseIntPipe) songId: number,
-    @Body() createSongPartDto: Prisma.SongPartCreateInput,
+    @Body('index') index: number,
+    @Body('name') name: string,
+    @Body('content') content: string,
+    @Body('song_id') song_id: number,
   ) {
-    return this.songPartService.create(songId, createSongPartDto);
+    return this.songPartService.create(index, name, content, song_id);
   }
 
   @Get()
