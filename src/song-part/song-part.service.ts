@@ -51,7 +51,7 @@ export class SongPartService {
 
   async update(id: number, updateSongPartDto: Prisma.SongPartUpdateInput) {
     await this.prisma.songPart.update({
-      where: { id: id },
+      where: { id },
       data: updateSongPartDto,
     });
     return {
@@ -62,7 +62,7 @@ export class SongPartService {
 
   async delete(id: number) {
     await this.prisma.songPart.delete({
-      where: { id: id },
+      where: { id },
     });
     return {
       message: 'OK',
