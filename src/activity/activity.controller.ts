@@ -21,15 +21,25 @@ export class ActivitiesController {
 
   @Get()
   async findAll(
-    @Query('membership_id') membershipId?: string,
-    @Query('church_id') churchId?: string,
-    @Query('column_id') columnId?: string,
+    @Query('membershipId') membershipId?: string,
+    @Query('churchId') churchId?: string,
+    @Query('columnId') columnId?: string,
+    @Query('startTimestamp') startTimestamp?: string,
+    @Query('endTimestamp') endTimestamp?: string,
   ) {
     const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
     const church_id = churchId ? parseInt(churchId, 10) : undefined;
     const column_id = columnId ? parseInt(columnId, 10) : undefined;
+    const startDate = startTimestamp ? new Date(startTimestamp) : undefined;
+    const endDate = endTimestamp ? new Date(endTimestamp) : undefined;
 
-    return this.activitiesService.findAll(membership_id, church_id, column_id);
+    return this.activitiesService.findAll(
+      membership_id,
+      church_id,
+      column_id,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')

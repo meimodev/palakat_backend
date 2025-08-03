@@ -26,8 +26,8 @@ export class MembershipController {
 
   @Get()
   async findAll(
-    @Query('column_id') columnId?: string,
-    @Query('church_id') churchId?: string,
+    @Query('columnId') columnId?: string,
+    @Query('churchId') churchId?: string,
   ) {
     const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
     const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;

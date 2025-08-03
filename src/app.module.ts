@@ -11,6 +11,7 @@ import { ChurchModule } from './church/church.module';
 import { HelperService } from '../common/helper/helper.service';
 import { SongModule } from './song/song.module';
 import { SongPartModule } from './song-part/song-part.module';
+import { ColumnModule } from './column/column.module';
 
 @Module({
   imports: [
@@ -21,10 +22,11 @@ import { SongPartModule } from './song-part/song-part.module';
     ActivitiesModule,
     ChurchModule,
     SongModule,
+    ColumnModule,
     SongPartModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],
   exports: [HelperService],
 })
-export class AppModule { }
+export class AppModule {}
