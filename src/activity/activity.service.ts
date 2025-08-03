@@ -13,7 +13,6 @@ export class ActivitiesService {
     startTimestamp?: Date,
     endTimestamp?: Date,
   ) {
-
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
       membership: {
