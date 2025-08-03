@@ -10,6 +10,7 @@ import { ActivitiesModule } from './activity/activity.module';
 import { ChurchModule } from './church/church.module';
 import { HelperService } from '../common/helper/helper.service';
 import { SongModule } from './song/song.module';
+import { SongPartModule } from './song-part/song-part.module';
 import { ColumnModule } from './column/column.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { ColumnModule } from './column/column.module';
     ChurchModule,
     SongModule,
     ColumnModule,
+    SongPartModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],

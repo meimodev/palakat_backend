@@ -363,6 +363,61 @@ async function main() {
     }),
   ]);
 
+  const songs = await Promise.all([
+    prisma.song.create({
+      data: {
+        title: 'Amazing Grace',
+        index: 1,
+        book: 'NNBT',
+        link: 'https://example.com/amazing-grace',
+        parts: {
+          create: [
+            {
+              index: 1,
+              name: 'Verse 1',
+              content:
+                'Amazing grace! how sweet the sound\nThat saved a wretch like me!',
+            },
+            {
+              index: 2,
+              name: 'Chorus',
+              content:
+                'I once was lost, but now am found;\nWas blind, but now I see.',
+            },
+          ],
+        },
+      },
+      include: { parts: true },
+    }),
+    prisma.song.create({
+      data: {
+        title: 'How Great Thou Art',
+        index: 2,
+        book: 'NKB',
+        link: 'https://example.com/how-great-thou-art',
+        parts: {
+          create: [
+            {
+              index: 1,
+              name: 'Verse 1',
+              content:
+                'O Lord my God, when I in awesome wonder\nConsider all the worlds Thy Hands have made;',
+            },
+            {
+              index: 2,
+              name: 'Chorus',
+              content:
+                'Then sings my soul, My Saviour God, to Thee,\nHow great Thou art, how great Thou art!',
+            },
+          ],
+        },
+      },
+      include: { parts: true },
+    }),
+  ]);
+
+  console.log(`✅ Created ${songs.length} songs with parts`);
+
   console.log(`✅ Created ${activities.length} activities`);
 
   // Display available accounts without membership
