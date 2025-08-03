@@ -19,13 +19,8 @@ export class SongPartController {
   constructor(private readonly songPartService: SongPartService) {}
 
   @Post()
-  async create(
-    @Body('index') index: number,
-    @Body('name') name: string,
-    @Body('content') content: string,
-    @Body('song_id') song_id: number,
-  ) {
-    return this.songPartService.create(index, name, content, song_id);
+  async create(@Body() dto: Prisma.SongPartCreateInput) {
+    return this.songPartService.create(dto);
   }
 
   @Get()

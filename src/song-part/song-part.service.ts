@@ -6,16 +6,9 @@ import { Prisma } from '@prisma/client';
 export class SongPartService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(index: number, name: string, content: string, song_id: number) {
+  async create(dto: Prisma.SongPartCreateInput) {
     const SongPart = await this.prisma.songPart.create({
-      data: {
-        index,
-        name,
-        content,
-        song: {
-          connect: { id: song_id },
-        },
-      },
+      data: dto,
     });
 
     return {
