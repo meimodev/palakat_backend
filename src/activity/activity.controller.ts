@@ -21,9 +21,9 @@ export class ActivitiesController {
 
   @Get()
   async findAll(
-    @Query('membership_id') membershipId?: string,
-    @Query('church_id') churchId?: string,
-    @Query('column_id') columnId?: string,
+    @Query('membershipId') membershipId?: string,
+    @Query('churchId') churchId?: string,
+    @Query('columnId') columnId?: string,
     @Query('startTimestamp') startTimestamp?: string,
     @Query('endTimestamp') endTimestamp?: string,
   ) {

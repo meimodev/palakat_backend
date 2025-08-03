@@ -7,17 +7,18 @@ export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(
-    membership_id?: number,
-    church_id?: number,
-    column_id?: number,
+    membershipId?: number,
+    churchId?: number,
+    columnId?: number,
     startTimestamp?: Date,
     endTimestamp?: Date,
   ) {
+
     const where: Prisma.ActivityWhereInput = {
-      membershipId: membership_id,
+      membershipId: membershipId,
       membership: {
-        churchId: church_id,
-        columnId: column_id,
+        churchId: churchId,
+        columnId: columnId,
       },
     };
 
