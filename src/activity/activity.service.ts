@@ -10,15 +10,29 @@ export class ActivitiesService {
     membershipId?: number,
     churchId?: number,
     columnId?: number,
+    startTimestamp?: Date,
+    endTimestamp?: Date,
   ) {
-    const activity = await this.prisma.activity.findMany({
-      where: {
-        membershipId: membershipId,
-        membership: {
-          churchId: churchId,
-          columnId: columnId,
-        },
+    const where: Prisma.ActivityWhereInput = {
+      membershipId: membershipId,
+      membership: {
+        churchId: churchId,
+        columnId: columnId,
       },
+    };
+
+    if (startTimestamp || endTimestamp) {
+      where.date = {};
+      if (startTimestamp) {
+        where.date.gte = startTimestamp;
+      }
+      if (endTimestamp) {
+        where.date.lte = endTimestamp;
+      }
+    }
+
+    const activity = await this.prisma.activity.findMany({
+      where,
     });
     return {
       message: 'Activities retrieved successfully',
