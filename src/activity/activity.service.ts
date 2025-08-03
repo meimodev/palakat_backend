@@ -7,16 +7,16 @@ export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(
-    membership_id?: number,
-    church_id?: number,
-    column_id?: number,
+    membershipId?: number,
+    churchId?: number,
+    columnId?: number,
   ) {
     const activity = await this.prisma.activity.findMany({
       where: {
-        membershipId: membership_id,
+        membershipId: membershipId,
         membership: {
-          churchId: church_id,
-          columnId: column_id,
+          churchId: churchId,
+          columnId: columnId,
         },
       },
     });
