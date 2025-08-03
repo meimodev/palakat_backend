@@ -33,7 +33,13 @@ export class ActivitiesController {
     const startDate = startTimestamp ? new Date(startTimestamp) : undefined;
     const endDate = endTimestamp ? new Date(endTimestamp) : undefined;
 
-    return this.activitiesService.findAll(membership_id, church_id, column_id, startDate, endDate);
+    return this.activitiesService.findAll(
+      membership_id,
+      church_id,
+      column_id,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')

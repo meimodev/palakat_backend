@@ -12,33 +12,33 @@ export class ActivitiesService {
     column_id?: number,
     startTimestamp?: Date,
     endTimestamp?: Date,
-) {
-  const where: Prisma.ActivityWhereInput = {
-    membershipId: membership_id,
-    membership: {
-      churchId: church_id,
-      columnId: column_id,
-    },
-  };
+  ) {
+    const where: Prisma.ActivityWhereInput = {
+      membershipId: membership_id,
+      membership: {
+        churchId: church_id,
+        columnId: column_id,
+      },
+    };
 
-  if (startTimestamp || endTimestamp) {
-    where.date = {};
-    if (startTimestamp) {
-      where.date.gte = startTimestamp;
+    if (startTimestamp || endTimestamp) {
+      where.date = {};
+      if (startTimestamp) {
+        where.date.gte = startTimestamp;
+      }
+      if (endTimestamp) {
+        where.date.lte = endTimestamp;
+      }
     }
-    if (endTimestamp) {
-      where.date.lte = endTimestamp;
-    }
+
+    const activity = await this.prisma.activity.findMany({
+      where,
+    });
+    return {
+      message: 'Activities retrieved successfully',
+      data: activity,
+    };
   }
-
-  const activity = await this.prisma.activity.findMany({
-    where,
-  });
-  return {
-    message: 'Activities retrieved successfully',
-    data: activity,
-  };
-}
 
   async findOne(id: number) {
     const activity = await this.prisma.activity.findUniqueOrThrow({
