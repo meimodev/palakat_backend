@@ -17,8 +17,8 @@ export class ColumnController {
   constructor(private readonly columnService: ColumnService) {}
 
   @Get()
-  async getColumns(@Query('church_id') church_id?: string) {
-    const ChurchId = church_id ? parseInt(church_id, 10) : undefined;
+  async getColumns(@Query('churchId') churchId?: string) {
+    const ChurchId = churchId ? parseInt(churchId, 10) : undefined;
     return this.columnService.getColumns(ChurchId);
   }
 

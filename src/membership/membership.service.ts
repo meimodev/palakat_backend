@@ -25,16 +25,16 @@ export class MembershipService {
   }
 
   async findAll(
-    church_id?: number,
-    column_id?: number,
+    churchId?: number,
+    columnId?: number,
   ): Promise<{ message: string; data: Membership[] }> {
     const where: Prisma.MembershipWhereInput = {};
 
-    if (church_id) {
-      where.churchId = church_id;
+    if (churchId) {
+      where.churchId = churchId;
     }
-    if (column_id) {
-      where.columnId = column_id;
+    if (columnId) {
+      where.columnId = columnId;
     }
 
     const memberships = await this.prisma.membership.findMany({
