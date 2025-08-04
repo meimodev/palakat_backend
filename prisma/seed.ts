@@ -1,4 +1,4 @@
-import { PrismaClient, Gender, Bipra, ActivityType } from '@prisma/client';
+import { PrismaClient, Gender, Bipra, ActivityType, Book } from '@prisma/client';
 import * as process from 'node:process';
 
 const prisma = new PrismaClient();
@@ -117,108 +117,142 @@ async function main() {
 
   console.log(`✅ Created ${accounts.length} accounts`);
 
-  // 2. Create Churches with Columns
-  const church1 = await prisma.church.create({
-    data: {
-      name: 'GKI Pondok Indah',
-      latitude: '-6.2615',
-      longitude: '106.7837',
-      address: 'Jl. Metro Pondok Indah, Jakarta Selatan',
-      columns: {
-        create: [
-          { name: 'Kolom Dewasa' },
-          { name: 'Kolom Pemuda' },
-          { name: 'Kolom Anak-anak' },
-        ],
-      },
-    },
-    include: { columns: true },
-  });
+  // 2. Create Churches with Columns (100 churches)
+  const churchNames = [
+    'GKI Pondok Indah', 'GPIB Immanuel', 'GKI Pluit', 'GBKP Jakarta', 'GPIB Effatha',
+    'GKI Kelapa Gading', 'GPIB Bethel', 'GKI Cawang', 'GPIB Paulus', 'GKI Tanjung Duren',
+    'GBKP Cawang', 'GPIB Gloria', 'GKI Modernland', 'GBKP Kelapa Gading', 'GPIB Bethany',
+    'GKI PIK', 'GPIB Shekinah', 'GKI Bintaro', 'GBKP Jakarta Timur', 'GPIB Hosanna',
+    'GKI Bekasi', 'GPIB Emmanuel', 'GKI Tangerang', 'GBKP Bekasi', 'GPIB Zion',
+    'GKI Bogor', 'GPIB Getsemani', 'GKI Depok', 'GBKP Depok', 'GPIB Shalom',
+    'GKI Serpong', 'GPIB Yerusalem', 'GKI Cikarang', 'GBKP Cikarang', 'GPIB Galilea',
+    'GKI Karawaci', 'GPIB Nazaret', 'GKI Lippo', 'GBKP Tangerang', 'GPIB Kanaan',
+    'GKI Sentul', 'GPIB Mahanaim', 'GKI Cibubur', 'GBKP Bogor', 'GPIB Philadelphia',
+    'GKI BSD', 'GPIB Hermon', 'GKI Cinere', 'GBKP Sentul', 'GPIB Sion',
+    'GKI Kemang', 'GPIB Karmel', 'GKI Sudirman', 'GBKP Kemang', 'GPIB Horeb',
+    'GKI Menteng', 'GPIB Bethesda', 'GKI Cikini', 'GBKP Menteng', 'GPIB Salem',
+    'GKI Matraman', 'GPIB Galilee', 'GKI Rawamangun', 'GBKP Rawamangun', 'GPIB Sinai',
+    'GKI Duren Sawit', 'GPIB Efrata', 'GKI Klender', 'GBKP Klender', 'GPIB Bethel Baru',
+    'GKI Jatinegara', 'GPIB Kana', 'GKI Cakung', 'GBKP Cakung', 'GPIB Moria',
+    'GKI Pulogadung', 'GPIB Ebenhaezer', 'GKI Kramat Jati', 'GBKP Kramat Jati', 'GPIB Gibeon',
+    'GKI Pasar Rebo', 'GPIB Antiokia', 'GKI Cipayung', 'GBKP Cipayung', 'GPIB Bethania',
+    'GKI Ciracas', 'GPIB Mahkota', 'GKI Condet', 'GBKP Condet', 'GPIB Pniel',
+    'GKI Makasar', 'GPIB Betel', 'GKI Halim', 'GBKP Halim', 'GPIB Tabor',
+    'GKI Tebet', 'GPIB Filadelfia', 'GKI Setiabudi', 'GBKP Setiabudi', 'GPIB Kapernaum',
+    'GKI Mampang', 'GPIB Betlehem', 'GKI Pancoran', 'GBKP Pancoran', 'GPIB Siloam',
+    'GKI Pasar Minggu', 'GPIB Bethsaida', 'GKI Jagakarsa', 'GBKP Jagakarsa', 'GPIB Eden'
+  ];
 
-  const church2 = await prisma.church.create({
-    data: {
-      name: 'GPIB Immanuel',
-      latitude: '-6.1751',
-      longitude: '106.8650',
-      address: 'Jl. Medan Merdeka Timur, Jakarta Pusat',
-      columns: {
-        create: [{ name: 'Kolom Keluarga' }, { name: 'Kolom Single' }],
-      },
-    },
-    include: { columns: true },
-  });
+  const areas = [
+    'Jakarta Selatan', 'Jakarta Pusat', 'Jakarta Utara', 'Jakarta Timur', 'Jakarta Barat',
+    'Bekasi', 'Tangerang', 'Depok', 'Bogor', 'Tangerang Selatan'
+  ];
 
-  const church3 = await prisma.church.create({
-    data: {
-      name: 'GKI Pluit',
-      latitude: '-6.1279',
-      longitude: '106.7980',
-      address: 'Jl. Pluit Indah Raya, Jakarta Utara',
-      columns: {
-        create: [
-          { name: 'Kolom Profesional' },
-          { name: 'Kolom Ibu-ibu' },
-          { name: 'Kolom Bapak-bapak' },
-        ],
-      },
-    },
-    include: { columns: true },
-  });
+  const streets = [
+    'Jl. Sudirman', 'Jl. Thamrin', 'Jl. Gatot Subroto', 'Jl. Kuningan', 'Jl. Senayan',
+    'Jl. Kemang Raya', 'Jl. Radio Dalam', 'Jl. Fatmawati', 'Jl. TB Simatupang', 'Jl. Ampera',
+    'Jl. Pahlawan', 'Jl. Veteran', 'Jl. Diponegoro', 'Jl. Imam Bonjol', 'Jl. Cut Meutia',
+    'Jl. Menteng Raya', 'Jl. Cikini', 'Jl. Salemba', 'Jl. Matraman', 'Jl. Senen',
+    'Jl. Kelapa Gading', 'Jl. Sunter', 'Jl. Pluit', 'Jl. Pantai Indah', 'Jl. Ancol',
+    'Jl. Cempaka Putih', 'Jl. Kemayoran', 'Jl. Tanjung Priok', 'Jl. Kelapa Sawit', 'Jl. Gading Serpong'
+  ];
 
-  console.log('✅ Created 3 churches with columns');
+  const columnTypes = [
+    ['Kolom Dewasa', 'Kolom Pemuda', 'Kolom Anak-anak'],
+    ['Kolom Keluarga', 'Kolom Single'],
+    ['Kolom Profesional', 'Kolom Ibu-ibu', 'Kolom Bapak-bapak'],
+    ['Kolom Lansia', 'Kolom Dewasa Muda'],
+    ['Kolom Keluarga Muda', 'Kolom Remaja'],
+    ['Kolom Pria', 'Kolom Wanita', 'Kolom Campuran']
+  ];
+
+  console.log('🏛️ Creating 100 churches...');
+  
+  const churches = [];
+  for (let i = 0; i < 100; i++) {
+    const name = churchNames[i % churchNames.length] + (i >= churchNames.length ? ` ${Math.floor(i / churchNames.length) + 1}` : '');
+    const area = areas[i % areas.length];
+    const street = streets[i % streets.length];
+    const columns = columnTypes[i % columnTypes.length];
+    
+    // Generate coordinates around Jakarta area (-6.0 to -6.5 latitude, 106.5 to 107.0 longitude)
+    const latitude = (-6.0 - Math.random() * 0.5).toFixed(4);
+    const longitude = (106.5 + Math.random() * 0.5).toFixed(4);
+    
+    const church = await prisma.church.create({
+      data: {
+        name: name,
+        latitude: latitude,
+        longitude: longitude,
+        address: `${street} No. ${Math.floor(Math.random() * 200) + 1}, ${area}`,
+        columns: {
+          create: columns.map(col => ({ name: col }))
+        },
+      },
+      include: { columns: true },
+    });
+    
+    churches.push(church);
+    
+    if ((i + 1) % 20 === 0) {
+      console.log(`   ✅ Created ${i + 1} churches...`);
+    }
+  }
+
+  console.log(`✅ Created ${churches.length} churches with columns`);
 
   // 3. Create Memberships
   const memberships = await Promise.all([
-    // John Doe -> GKI Pondok Indah, Kolom Dewasa
+    // John Doe -> First Church, First Column
     prisma.membership.create({
       data: {
         accountId: accounts[0].id,
-        churchId: church1.id,
-        columnId: church1.columns[0].id, // Kolom Dewasa
+        churchId: churches[0].id,
+        columnId: churches[0].columns[0].id,
         baptize: true,
         sidi: true,
       },
     }),
 
-    // Jane Smith -> GPIB Immanuel, Kolom Single
+    // Jane Smith -> Second Church, Second Column (or first if only one)
     prisma.membership.create({
       data: {
         accountId: accounts[1].id,
-        churchId: church2.id,
-        columnId: church2.columns[1].id, // Kolom Single
+        churchId: churches[1].id,
+        columnId: churches[1].columns[1] ? churches[1].columns[1].id : churches[1].columns[0].id,
         baptize: true,
         sidi: false,
       },
     }),
 
-    // Michael Johnson -> GKI Pluit, Kolom Profesional
+    // Michael Johnson -> Third Church, First Column
     prisma.membership.create({
       data: {
         accountId: accounts[2].id,
-        churchId: church3.id,
-        columnId: church3.columns[0].id, // Kolom Profesional
+        churchId: churches[2].id,
+        columnId: churches[2].columns[0].id,
         baptize: true,
         sidi: true,
       },
     }),
 
-    // Sarah Wilson -> GKI Pondok Indah, Kolom Pemuda
+    // Sarah Wilson -> First Church, Second Column (or first if only one)
     prisma.membership.create({
       data: {
         accountId: accounts[3].id,
-        churchId: church1.id,
-        columnId: church1.columns[1].id, // Kolom Pemuda
+        churchId: churches[0].id,
+        columnId: churches[0].columns[1] ? churches[0].columns[1].id : churches[0].columns[0].id,
         baptize: false,
         sidi: false,
       },
     }),
 
-    // David Brown -> GPIB Immanuel, Kolom Keluarga
+    // David Brown -> Second Church, First Column
     prisma.membership.create({
       data: {
         accountId: accounts[4].id,
-        churchId: church2.id,
-        columnId: church2.columns[0].id, // Kolom Keluarga
+        churchId: churches[1].id,
+        columnId: churches[1].columns[0].id,
         baptize: true,
         sidi: false,
       },
@@ -363,12 +397,14 @@ async function main() {
     }),
   ]);
 
+  console.log(`✅ Created ${activities.length} activities`);
+
   const songs = await Promise.all([
     prisma.song.create({
       data: {
         title: 'Amazing Grace',
         index: 1,
-        book: 'NNBT',
+        book: Book.NNBT,
         link: 'https://example.com/amazing-grace',
         parts: {
           create: [
@@ -393,7 +429,7 @@ async function main() {
       data: {
         title: 'How Great Thou Art',
         index: 2,
-        book: 'NKB',
+        book: Book.NKB,
         link: 'https://example.com/how-great-thou-art',
         parts: {
           create: [
@@ -420,7 +456,16 @@ async function main() {
 
   console.log(`✅ Created ${activities.length} activities`);
 
-  // Display available accounts without membership
+  // 6. Display summary
+  console.log('\n📊 Seed Summary:');
+  console.log('================');
+  console.log(`🏛️  Churches: ${churches.length}`);
+  console.log(`👤 Accounts: ${accounts.length}`);
+  console.log(`🤝 Memberships: ${memberships.length}`);
+  console.log(`📅 Activities: ${activities.length}`);
+  console.log(`🎵 Songs: ${songs.length}`);
+
+  // Display accounts without membership
   const accountsWithoutMembership = await prisma.account.findMany({
     where: {
       membership: null,
@@ -428,53 +473,30 @@ async function main() {
   });
 
   console.log(
-    `\n👤 Accounts available for new memberships (${accountsWithoutMembership.length}):`,
+    `\n👤 Accounts available for new memberships: ${accountsWithoutMembership.length}`,
   );
-  accountsWithoutMembership.forEach((account) => {
-    console.log(
-      `   - ID: ${account.id}, Name: ${account.name}, Phone: ${account.phone}`,
-    );
-  });
 
-  // 5. Display summary
-  console.log('\n📊 Seed Summary:');
-  console.log('================');
-
-  const allChurches = await prisma.church.findMany({
+  // Display sample churches with most members
+  const topChurches = await prisma.church.findMany({
     include: {
-      columns: true,
-      memberships: {
-        include: {
-          account: true,
-          column: true,
-          activities: true,
-        },
-      },
+      _count: {
+        select: {
+          memberships: true,
+          columns: true,
+        }
+      }
     },
+    orderBy: {
+      memberships: {
+        _count: 'desc'
+      }
+    },
+    take: 5
   });
 
-  allChurches.forEach((church) => {
-    console.log(`\n🏛️  ${church.name}`);
-    console.log(`   📍 ${church.address}`);
-    console.log(
-      `   📊 Columns: ${church.columns.map((c) => c.name).join(', ')}`,
-    );
-    console.log(`   👥 Members: ${church.memberships.length}`);
-
-    church.memberships.forEach((membership) => {
-      console.log(
-        `      - ${membership.account.name} (${membership.column.name}) - Baptize: ${membership.baptize}, Sidi: ${membership.sidi}`,
-      );
-      console.log(`        📅 Activities: ${membership.activities.length}`);
-      membership.activities.forEach((activity) => {
-        const dateStr = activity.date
-          ? activity.date.toLocaleDateString()
-          : 'No date';
-        console.log(
-          `           • ${activity.title} (${activity.activityType}) - ${dateStr}`,
-        );
-      });
-    });
+  console.log('\n🏆 Top 5 Churches by Member Count:');
+  topChurches.forEach((church, index) => {
+    console.log(`   ${index + 1}. ${church.name}: ${church._count.memberships} members, ${church._count.columns} columns`);
   });
 
   console.log('\n🎉 Seeding completed successfully!');
