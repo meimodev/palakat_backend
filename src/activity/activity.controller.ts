@@ -9,6 +9,7 @@ import {
   Post,
   Body,
   Patch,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
@@ -26,6 +27,8 @@ export class ActivitiesController {
     @Query('columnId') columnId?: string,
     @Query('startTimestamp') startTimestamp?: string,
     @Query('endTimestamp') endTimestamp?: string,
+    @Query('page',new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize',new DefaultValuePipe(10), ParseIntPipe) pageSize?: number,
   ) {
     const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
     const church_id = churchId ? parseInt(churchId, 10) : undefined;
@@ -33,13 +36,15 @@ export class ActivitiesController {
     const startDate = startTimestamp ? new Date(startTimestamp) : undefined;
     const endDate = endTimestamp ? new Date(endTimestamp) : undefined;
 
-    return this.activitiesService.findAll(
-      membership_id,
-      church_id,
-      column_id,
-      startDate,
-      endDate,
-    );
+    return this.activitiesService.findAll({
+      membershipId: membership_id,
+      churchId: church_id,
+      columnId: column_id,
+      startTimestamp: startDate,
+      endTimestamp: endDate,
+      page,
+      pageSize,
+    });
   }
 
   @Get(':id')
