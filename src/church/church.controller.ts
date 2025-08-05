@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
@@ -21,11 +22,15 @@ export class ChurchController {
     @Query('search') search?: string,
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize?: number,
   ) {
     return this.churchService.getChurches({
       search,
       latitude,
       longitude,
+      page,
+      pageSize,
     });
   }
 

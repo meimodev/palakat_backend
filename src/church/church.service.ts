@@ -13,16 +13,40 @@ export class ChurchService {
     search?: string;
     latitude?: string;
     longitude?: string;
+    page?: number;
+    pageSize?: number;
   }) {
-    const { search, latitude, longitude } = params;
+    const { search, latitude, longitude, page, pageSize } = params;
+
+    const take = Math.min(pageSize, 100);
+    const skip = (page - 1) * take;
+
     const lat = latitude ? parseFloat(latitude) : null;
     const lng = longitude ? parseFloat(longitude) : null;
 
-    let churches = await this.prisma.church.findMany();
+    // Apply search filter at database level
+    const where: Prisma.ChurchWhereInput = {};
+    if (search && search.length >= 3) {
+      const keyword = search.toLowerCase();
+      where.OR = [
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { address: { contains: keyword, mode: 'insensitive' } },
+      ];
+    }
 
-    // Sort by distance if lat/long provided
+    let churches = [];
+    let total: number;
+
     if (lat != null && lng != null) {
-      churches = churches
+      const [totalCount, allChurchesData] = await this.prisma.$transaction([
+        this.prisma.church.count({ where }),
+        this.prisma.church.findMany({ where }),
+      ]);
+
+      total = totalCount;
+
+      // Calculate distance and sort
+      const churchesWithDistance = allChurchesData
         .map((church) => ({
           ...church,
           distance: this.helperService.calculateDistance(
@@ -33,23 +57,37 @@ export class ChurchService {
           ),
         }))
         .sort((a, b) => a.distance - b.distance);
+
+      // Apply pagination AFTER sorting
+      churches = churchesWithDistance.slice(skip, skip + take);
     } else {
-      churches = churches.sort((a, b) => a.name.localeCompare(b.name));
+      const [totalCount, churchesData] = await this.prisma.$transaction([
+        this.prisma.church.count({ where }),
+        this.prisma.church.findMany({
+          where,
+          take,
+          skip,
+          orderBy: { name: 'asc' },
+        }),
+      ]);
+
+      total = totalCount;
+      churches = churchesData;
     }
 
-    // Apply search filter (at least 3 consecutive characters match in name or address)
-    if (search && search.length >= 3) {
-      const keyword = search.toLowerCase();
-      churches = churches.filter(
-        (c) =>
-          c.name.toLowerCase().includes(keyword) ||
-          c.address.toLowerCase().includes(keyword),
-      );
-    }
+    const totalPages = Math.ceil(total / take);
 
     return {
       message: 'Churches fetched successfully',
       data: churches,
+      pagination: {
+        page: page,
+        pageSize: take,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
     };
   }
 
