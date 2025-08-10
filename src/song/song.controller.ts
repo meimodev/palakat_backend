@@ -28,7 +28,8 @@ export class SongController {
   async findAll(
     @Query('search') search?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number,
+    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe)
+    pageSize?: number,
   ) {
     return this.songService.findAll({ search, page, pageSize });
   }

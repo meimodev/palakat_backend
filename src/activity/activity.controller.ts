@@ -27,8 +27,9 @@ export class ActivitiesController {
     @Query('columnId') columnId?: string,
     @Query('startTimestamp') startTimestamp?: string,
     @Query('endTimestamp') endTimestamp?: string,
-    @Query('page',new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize',new DefaultValuePipe(10), ParseIntPipe) pageSize?: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe)
+    pageSize?: number,
   ) {
     const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
     const church_id = churchId ? parseInt(churchId, 10) : undefined;

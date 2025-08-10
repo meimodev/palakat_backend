@@ -26,9 +26,9 @@ export class ActivitiesService {
     } = params;
 
     // Safe pagination defaults and bounds to avoid NaN/invalid values
-  const currentPage = Math.max(1, page ?? 1);
-  const take = Math.min(Math.max(1, pageSize ?? 10), 100);
-  const skip = (currentPage - 1) * take;
+    const currentPage = Math.max(1, page ?? 1);
+    const take = Math.min(Math.max(1, pageSize ?? 10), 100);
+    const skip = (currentPage - 1) * take;
 
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
@@ -58,14 +58,14 @@ export class ActivitiesService {
       }),
     ]);
 
-  const totalpages = Math.ceil(total / take);
+    const totalpages = Math.ceil(total / take);
 
     return {
-      message : 'Activities retrieved successfully',
-      data : activities,
+      message: 'Activities retrieved successfully',
+      data: activities,
       pagination: {
         page: currentPage,
-  pageSize: take,
+        pageSize: take,
         total,
         totalpages,
         hasNext: currentPage < totalpages,

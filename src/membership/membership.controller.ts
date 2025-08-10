@@ -30,12 +30,18 @@ export class MembershipController {
     @Query('columnId') columnId?: string,
     @Query('churchId') churchId?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize?: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe)
+    pageSize?: number,
   ) {
     const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
     const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;
 
-    return this.membershipService.findAll(churchIdNum, columnIdNum, page, pageSize);
+    return this.membershipService.findAll(
+      churchIdNum,
+      columnIdNum,
+      page,
+      pageSize,
+    );
   }
 
   @Get(':id')

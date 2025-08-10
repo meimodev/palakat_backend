@@ -26,11 +26,12 @@ export class SongPartController {
 
   @Get()
   async findAll(
-  @Query('song_id', new ParseIntPipe({ optional: true })) songId?: number,
-  @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-  @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number,
+    @Query('song_id', new ParseIntPipe({ optional: true })) songId?: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe)
+    pageSize?: number,
   ) {
-  return this.songPartService.findAll({ songId, page, pageSize });
+    return this.songPartService.findAll({ songId, page, pageSize });
   }
 
   @Get(':id')

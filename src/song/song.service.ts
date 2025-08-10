@@ -42,15 +42,15 @@ export class SongService {
       ];
     }
 
-  const currentPage = Math.max(1, page ?? 1);
-  const take = Math.min(Math.max(1, pageSize ?? 20), 100);
-  const skip = (currentPage - 1) * take;
+    const currentPage = Math.max(1, page ?? 1);
+    const take = Math.min(Math.max(1, pageSize ?? 20), 100);
+    const skip = (currentPage - 1) * take;
 
-  const [total, songs] = await this.prisma.$transaction([
+    const [total, songs] = await this.prisma.$transaction([
       this.prisma.song.count({ where }),
       this.prisma.song.findMany({
         where,
-    take,
+        take,
         skip,
         orderBy: { id: 'desc' },
         include: {
@@ -59,7 +59,7 @@ export class SongService {
       }),
     ]);
 
-  const totalPages = Math.ceil(total / take);
+    const totalPages = Math.ceil(total / take);
 
     return {
       message: 'OK',

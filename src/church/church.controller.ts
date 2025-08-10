@@ -23,7 +23,8 @@ export class ChurchController {
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize?: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe)
+    pageSize?: number,
   ) {
     return this.churchService.getChurches({
       search,

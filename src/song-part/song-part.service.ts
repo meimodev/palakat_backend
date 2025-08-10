@@ -17,7 +17,11 @@ export class SongPartService {
     };
   }
 
-  async findAll(params?: { songId?: number; page?: number; pageSize?: number }) {
+  async findAll(params?: {
+    songId?: number;
+    page?: number;
+    pageSize?: number;
+  }) {
     const { songId, page, pageSize } = params ?? {};
 
     const where: Prisma.SongPartWhereInput = {};
@@ -25,21 +29,21 @@ export class SongPartService {
       where.songId = songId;
     }
 
-  const currentPage = Math.max(1, page ?? 1);
-  const take = Math.min(Math.max(1, pageSize ?? 20), 100);
-  const skip = (currentPage - 1) * take;
+    const currentPage = Math.max(1, page ?? 1);
+    const take = Math.min(Math.max(1, pageSize ?? 20), 100);
+    const skip = (currentPage - 1) * take;
 
-  const [total, parts] = await this.prisma.$transaction([
+    const [total, parts] = await this.prisma.$transaction([
       this.prisma.songPart.count({ where }),
       this.prisma.songPart.findMany({
         where,
-    take,
+        take,
         skip,
         orderBy: { id: 'desc' },
       }),
     ]);
 
-  const totalPages = Math.ceil(total / take);
+    const totalPages = Math.ceil(total / take);
 
     return {
       message: 'OK',
