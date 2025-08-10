@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Controller, UseGuards } from '@nestjs/common';
@@ -24,8 +25,12 @@ export class SongController {
   }
 
   @Get()
-  async findAll(@Query('search') search?: string) {
-    return this.songService.findAll(search);
+  async findAll(
+    @Query('search') search?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number,
+  ) {
+    return this.songService.findAll({ search, page, pageSize });
   }
 
   @Get(':id')

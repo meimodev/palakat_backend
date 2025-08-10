@@ -16,14 +16,16 @@ export class SongService {
     };
   }
 
-  async findAll(text?: string) {
+  async findAll(params: { search?: string; page?: number; pageSize?: number }) {
+    const { search, page, pageSize } = params ?? {};
+
     const where: Prisma.SongWhereInput = {};
 
-    if (text) {
+    if (search) {
       where.OR = [
         {
           title: {
-            contains: text,
+            contains: search,
             mode: 'insensitive',
           },
         },
@@ -31,7 +33,7 @@ export class SongService {
           parts: {
             some: {
               content: {
-                contains: text,
+                contains: search,
                 mode: 'insensitive',
               },
             },
@@ -40,16 +42,36 @@ export class SongService {
       ];
     }
 
-    const song = await this.prisma.song.findMany({
-      where,
-      include: {
-        parts: true,
-      },
-    });
+    const currentPage = Math.max(1, page ?? 1);
+    const size = Math.min(Math.max(1, pageSize ?? 20), 100);
+    const skip = (currentPage - 1) * size;
+
+    const [total, songs] = await this.prisma.$transaction([
+      this.prisma.song.count({ where }),
+      this.prisma.song.findMany({
+        where,
+        take: size,
+        skip,
+        orderBy: { id: 'desc' },
+        include: {
+          parts: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / size);
 
     return {
       message: 'OK',
-      data: song,
+      data: songs,
+      pagination: {
+        page: currentPage,
+        pageSize: size,
+        total,
+        totalPages,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1,
+      },
     };
   }
 
