@@ -27,7 +27,20 @@ export class MembershipService {
   async findAll(
     churchId?: number,
     columnId?: number,
-  ): Promise<{ message: string; data: Membership[] }> {
+    page?: number,
+    pageSize?: number,
+  ): Promise<{
+    message: string;
+    data: Membership[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
     const where: Prisma.MembershipWhereInput = {};
 
     if (churchId) {
@@ -37,18 +50,39 @@ export class MembershipService {
       where.columnId = columnId;
     }
 
-    const memberships = await this.prisma.membership.findMany({
-      where,
-      include: {
-        account: true,
-        church: true,
-        column: true,
-      },
-    });
+    // Safe pagination defaults and bounds to avoid NaN/invalid values
+    const currentPage = Math.max(1, page ?? 1);
+    const take = Math.min(Math.max(1, pageSize ?? 20), 100);
+    const skip = (currentPage - 1) * take;
+
+    const [ total, memberships] = await this.prisma.$transaction([
+      this.prisma.membership.count({ where }),
+      this.prisma.membership.findMany({
+        where,
+        take: take,
+        skip,
+        orderBy: { id: 'desc' },
+        include: {
+          account: true,
+          church: true,
+          column: true,
+        }
+      })
+    ]);
+
+    const totalPages = Math.ceil(total / take);
 
     return {
       message: 'Memberships retrieved successfully',
       data: memberships,
+      pagination: {
+        page: currentPage,
+        pageSize: take,
+        total,
+        totalPages,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1,
+      },
     };
   }
 
