@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Controller, UseGuards } from '@nestjs/common';
@@ -25,9 +26,11 @@ export class SongPartController {
 
   @Get()
   async findAll(
-    @Query('song_id', new ParseIntPipe({ optional: true })) songId?: number,
+  @Query('song_id', new ParseIntPipe({ optional: true })) songId?: number,
+  @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+  @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize?: number,
   ) {
-    return this.songPartService.findAll(songId);
+  return this.songPartService.findAll({ songId, page, pageSize });
   }
 
   @Get(':id')

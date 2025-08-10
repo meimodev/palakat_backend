@@ -17,18 +17,41 @@ export class SongPartService {
     };
   }
 
-  async findAll(song_id?: number) {
-    const where: Prisma.SongPartWhereInput = {};
+  async findAll(params?: { songId?: number; page?: number; pageSize?: number }) {
+    const { songId, page, pageSize } = params ?? {};
 
-    if (song_id) {
-      where.songId = song_id;
+    const where: Prisma.SongPartWhereInput = {};
+    if (songId) {
+      where.songId = songId;
     }
-    const parts = await this.prisma.songPart.findMany({
-      where,
-    });
+
+    const currentPage = Math.max(1, page ?? 1);
+    const size = Math.min(Math.max(1, pageSize ?? 20), 100);
+    const skip = (currentPage - 1) * size;
+
+    const [total, parts] = await this.prisma.$transaction([
+      this.prisma.songPart.count({ where }),
+      this.prisma.songPart.findMany({
+        where,
+        take: size,
+        skip,
+        orderBy: { id: 'desc' },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / size);
+
     return {
       message: 'OK',
       data: parts,
+      pagination: {
+        page: currentPage,
+        pageSize: size,
+        total,
+        totalPages,
+        hasNext: currentPage < totalPages,
+        hasPrev: currentPage > 1,
+      },
     };
   }
 
