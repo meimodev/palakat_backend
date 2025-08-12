@@ -28,9 +28,9 @@ export class MembershipController {
 
   @Get()
   async findAll(
+    @Pagination() pagination: PaginationParams,
     @Query('columnId') columnId?: string,
     @Query('churchId') churchId?: string,
-    @Pagination() pagination?: PaginationParams,
   ) {
     const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
     const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;
@@ -38,8 +38,8 @@ export class MembershipController {
     return this.membershipService.findAll({
       churchId: churchIdNum,
       columnId: columnIdNum,
-      skip: pagination?.skip ?? 0,
-      take: pagination?.take ?? 20,
+      skip: pagination.skip,
+      take: pagination.take,
     });
   }
 
