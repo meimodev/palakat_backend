@@ -27,11 +27,14 @@ export class SongPartController {
 
   @Get()
   async findAll(
+    @Pagination() pagination: PaginationParams,
     @Query('song_id', new ParseIntPipe({ optional: true })) songId?: number,
-    @Pagination() pagination?: PaginationParams,
   ) {
-    const { skip, take } = pagination ?? ({ skip: 0, take: 20 } as any);
-    return this.songPartService.findAll({ songId, skip, take });
+    return this.songPartService.findAll({
+      songId,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
   }
 
   @Get(':id')
