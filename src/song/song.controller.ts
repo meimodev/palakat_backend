@@ -7,12 +7,13 @@ import {
   Delete,
   Param,
   ParseIntPipe,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Controller, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { SongService } from './song.service';
+import { Pagination } from '../../common/pagination/pagination.decorator';
+import { PaginationParams } from '../../common/pagination/pagination.types';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('song')
@@ -27,11 +28,10 @@ export class SongController {
   @Get()
   async findAll(
     @Query('search') search?: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe)
-    pageSize?: number,
+    @Pagination() pagination?: PaginationParams,
   ) {
-    return this.songService.findAll({ search, page, pageSize });
+    const { skip, take } = pagination ?? ({ skip: 0, take: 20 } as any);
+    return this.songService.findAll({ search, skip, take });
   }
 
   @Get(':id')
