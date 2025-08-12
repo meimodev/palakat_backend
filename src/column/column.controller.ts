@@ -29,8 +29,8 @@ export class ColumnController {
     const ChurchId = churchId ? parseInt(churchId, 10) : undefined;
     return this.columnService.getColumns({
       churchId: ChurchId,
-      skip: pagination.skip ?? 0,
-      take: pagination.take ?? 20,
+      skip: pagination.skip,
+      take: pagination.take,
     });
   }
 
