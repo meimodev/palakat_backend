@@ -13,15 +13,13 @@ export class ChurchService {
     search?: string;
     latitude?: string;
     longitude?: string;
-    page?: number;
-    pageSize?: number;
+    skip: number;
+    take: number;
   }) {
-    const { search, latitude, longitude, page, pageSize } = params;
+    const { search, latitude, longitude, skip, take } = params;
 
-    // Safe pagination defaults and bounds to avoid NaN
-    const currentPage = Math.max(1, page ?? 1);
-    const take = Math.min(Math.max(1, pageSize ?? 10), 100);
-    const skip = (currentPage - 1) * take;
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
 
     const lat = latitude ? parseFloat(latitude) : null;
     const lng = longitude ? parseFloat(longitude) : null;
@@ -61,14 +59,14 @@ export class ChurchService {
         .sort((a, b) => a.distance - b.distance);
 
       // Apply pagination AFTER sorting
-      churches = churchesWithDistance.slice(skip, skip + take);
+      churches = churchesWithDistance.slice(_skip, _skip + _take);
     } else {
       const [totalCount, churchesData] = await this.prisma.$transaction([
         this.prisma.church.count({ where }),
         this.prisma.church.findMany({
           where,
-          take,
-          skip,
+          take: _take,
+          skip: _skip,
           orderBy: { name: 'asc' },
         }),
       ]);
@@ -77,20 +75,11 @@ export class ChurchService {
       churches = churchesData;
     }
 
-    const totalPages = Math.ceil(total / take);
-
     return {
       message: 'Churches fetched successfully',
       data: churches,
-      pagination: {
-        page: currentPage,
-        pageSize: take,
-        total,
-        totalPages,
-        hasNext: currentPage < totalPages,
-        hasPrev: currentPage > 1,
-      },
-    };
+      total,
+    } as any;
   }
 
   async findOne(id: number) {

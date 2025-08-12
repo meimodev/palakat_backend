@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   Param,
@@ -14,7 +13,8 @@ import {
 import { ChurchService } from './church.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
-
+import { Pagination } from '../../common/pagination/pagination.decorator';
+import { PaginationParams } from '../../common/pagination/pagination.types';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('church')
@@ -26,16 +26,14 @@ export class ChurchController {
     @Query('search') search?: string,
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe)
-    pageSize?: number,
+    @Pagination() pagination?: PaginationParams,
   ) {
     return this.churchService.getChurches({
       search,
       latitude,
       longitude,
-      page,
-      pageSize,
+      skip: pagination?.skip ?? 0,
+      take: pagination?.take ?? 20,
     });
   }
 
