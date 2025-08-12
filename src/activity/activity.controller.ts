@@ -9,11 +9,12 @@ import {
   Post,
   Body,
   Patch,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { Prisma } from '@prisma/client';
+import { Pagination } from '../../common/pagination/pagination.decorator';
+import { PaginationParams } from '../../common/pagination/pagination.types';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('activity')
@@ -27,9 +28,7 @@ export class ActivitiesController {
     @Query('columnId') columnId?: string,
     @Query('startTimestamp') startTimestamp?: string,
     @Query('endTimestamp') endTimestamp?: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
-    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe)
-    pageSize?: number,
+    @Pagination() pagination?: PaginationParams,
   ) {
     const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
     const church_id = churchId ? parseInt(churchId, 10) : undefined;
@@ -43,8 +42,8 @@ export class ActivitiesController {
       columnId: column_id,
       startTimestamp: startDate,
       endTimestamp: endDate,
-      page,
-      pageSize,
+      skip: pagination?.skip ?? 0,
+      take: pagination?.take ?? 20,
     });
   }
 

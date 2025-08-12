@@ -12,8 +12,8 @@ export class ActivitiesService {
     columnId?: number;
     startTimestamp?: Date;
     endTimestamp?: Date;
-    page?: number;
-    pageSize?: number;
+    skip: number;
+    take: number;
   }) {
     const {
       membershipId,
@@ -21,14 +21,11 @@ export class ActivitiesService {
       columnId,
       startTimestamp,
       endTimestamp,
-      page,
-      pageSize,
+      skip,
+      take,
     } = params;
-
-    // Safe pagination defaults and bounds to avoid NaN/invalid values
-    const currentPage = Math.max(1, page ?? 1);
-    const take = Math.min(Math.max(1, pageSize ?? 10), 100);
-    const skip = (currentPage - 1) * take;
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
 
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
@@ -52,25 +49,16 @@ export class ActivitiesService {
       this.prisma.activity.count({ where }),
       this.prisma.activity.findMany({
         where,
-        take,
-        skip,
+        take: _take,
+        skip: _skip,
         orderBy: { date: 'desc' },
       }),
     ]);
 
-    const totalpages = Math.ceil(total / take);
-
     return {
       message: 'Activities retrieved successfully',
       data: activities,
-      pagination: {
-        page: currentPage,
-        pageSize: take,
-        total,
-        totalpages,
-        hasNext: currentPage < totalpages,
-        hasPrevious: currentPage > 1,
-      },
+      total,
     };
   }
 
