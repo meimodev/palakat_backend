@@ -23,17 +23,17 @@ export class ChurchController {
 
   @Get()
   async getChurches(
+    @Pagination() pagination: PaginationParams,
     @Query('search') search?: string,
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
-    @Pagination() pagination?: PaginationParams,
   ) {
     return this.churchService.getChurches({
       search,
       latitude,
       longitude,
-      skip: pagination?.skip ?? 0,
-      take: pagination?.take ?? 20,
+      skip: pagination.skip,
+      take: pagination.take,
     });
   }
 
