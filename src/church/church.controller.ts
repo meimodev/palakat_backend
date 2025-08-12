@@ -8,16 +8,22 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ChurchService } from './church.service';
 import { Prisma } from '@prisma/client';
+import { AuthGuard } from '@nestjs/passport';
+import { Pagination } from '../../common/pagination/pagination.decorator';
+import { PaginationParams } from '../../common/pagination/pagination.types';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('church')
 export class ChurchController {
   constructor(private readonly churchService: ChurchService) {}
 
   @Get()
   async getChurches(
+    @Pagination() pagination: PaginationParams,
     @Query('search') search?: string,
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
@@ -26,6 +32,8 @@ export class ChurchController {
       search,
       latitude,
       longitude,
+      skip: pagination.skip,
+      take: pagination.take,
     });
   }
 

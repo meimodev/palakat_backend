@@ -17,19 +17,31 @@ export class SongPartService {
     };
   }
 
-  async findAll(song_id?: number) {
-    const where: Prisma.SongPartWhereInput = {};
+  async findAll(params: { songId?: number; skip: number; take: number }) {
+    const { songId, skip, take } = params ?? ({} as any);
 
-    if (song_id) {
-      where.songId = song_id;
+    const where: Prisma.SongPartWhereInput = {};
+    if (songId) {
+      where.songId = songId;
     }
-    const parts = await this.prisma.songPart.findMany({
-      where,
-    });
+
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
+
+    const [total, parts] = await this.prisma.$transaction([
+      this.prisma.songPart.count({ where }),
+      this.prisma.songPart.findMany({
+        where,
+        take: _take,
+        skip: _skip,
+        orderBy: { id: 'desc' },
+      }),
+    ]);
     return {
       message: 'OK',
       data: parts,
-    };
+      total,
+    } as any;
   }
 
   async findOne(id: number) {

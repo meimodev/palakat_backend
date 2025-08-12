@@ -24,10 +24,17 @@ export class MembershipService {
     };
   }
 
-  async findAll(
-    churchId?: number,
-    columnId?: number,
-  ): Promise<{ message: string; data: Membership[] }> {
+  async findAll(params: {
+    churchId?: number;
+    columnId?: number;
+    skip: number;
+    take: number;
+  }): Promise<{
+    message: string;
+    data: Membership[];
+    total: number;
+  }> {
+    const { churchId, columnId, skip, take } = params ?? ({} as any);
     const where: Prisma.MembershipWhereInput = {};
 
     if (churchId) {
@@ -37,19 +44,28 @@ export class MembershipService {
       where.columnId = columnId;
     }
 
-    const memberships = await this.prisma.membership.findMany({
-      where,
-      include: {
-        account: true,
-        church: true,
-        column: true,
-      },
-    });
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
 
+    const [total, memberships] = await this.prisma.$transaction([
+      this.prisma.membership.count({ where }),
+      this.prisma.membership.findMany({
+        where,
+        take: _take,
+        skip: _skip,
+        orderBy: { id: 'desc' },
+        include: {
+          account: true,
+          church: true,
+          column: true,
+        },
+      }),
+    ]);
     return {
       message: 'Memberships retrieved successfully',
       data: memberships,
-    };
+      total,
+    } as any;
   }
 
   async findOne(id: number): Promise<{ message: string; data: Membership }> {

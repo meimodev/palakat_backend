@@ -16,14 +16,16 @@ export class SongService {
     };
   }
 
-  async findAll(text?: string) {
+  async findAll(params: { search?: string; skip: number; take: number }) {
+    const { search, skip, take } = params ?? ({} as any);
+
     const where: Prisma.SongWhereInput = {};
 
-    if (text) {
+    if (search) {
       where.OR = [
         {
           title: {
-            contains: text,
+            contains: search,
             mode: 'insensitive',
           },
         },
@@ -31,7 +33,7 @@ export class SongService {
           parts: {
             some: {
               content: {
-                contains: text,
+                contains: search,
                 mode: 'insensitive',
               },
             },
@@ -40,17 +42,27 @@ export class SongService {
       ];
     }
 
-    const song = await this.prisma.song.findMany({
-      where,
-      include: {
-        parts: true,
-      },
-    });
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
+
+    const [total, songs] = await this.prisma.$transaction([
+      this.prisma.song.count({ where }),
+      this.prisma.song.findMany({
+        where,
+        take: _take,
+        skip: _skip,
+        orderBy: { id: 'desc' },
+        include: {
+          parts: true,
+        },
+      }),
+    ]);
 
     return {
       message: 'OK',
-      data: song,
-    };
+      data: songs,
+      total,
+    } as any;
   }
 
   async findOne(id: number) {

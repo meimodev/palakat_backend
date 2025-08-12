@@ -6,13 +6,27 @@ import { PrismaService } from 'nestjs-prisma';
 export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(
-    membershipId?: number,
-    churchId?: number,
-    columnId?: number,
-    startTimestamp?: Date,
-    endTimestamp?: Date,
-  ) {
+  async findAll(params: {
+    membershipId?: number;
+    churchId?: number;
+    columnId?: number;
+    startTimestamp?: Date;
+    endTimestamp?: Date;
+    skip: number;
+    take: number;
+  }) {
+    const {
+      membershipId,
+      churchId,
+      columnId,
+      startTimestamp,
+      endTimestamp,
+      skip,
+      take,
+    } = params;
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
+
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
       membership: {
@@ -31,12 +45,20 @@ export class ActivitiesService {
       }
     }
 
-    const activity = await this.prisma.activity.findMany({
-      where,
-    });
+    const [total, activities] = await this.prisma.$transaction([
+      this.prisma.activity.count({ where }),
+      this.prisma.activity.findMany({
+        where,
+        take: _take,
+        skip: _skip,
+        orderBy: { date: 'desc' },
+      }),
+    ]);
+
     return {
       message: 'Activities retrieved successfully',
-      data: activity,
+      data: activities,
+      total,
     };
   }
 

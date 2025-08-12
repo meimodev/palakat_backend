@@ -13,16 +13,40 @@ export class ChurchService {
     search?: string;
     latitude?: string;
     longitude?: string;
+    skip: number;
+    take: number;
   }) {
-    const { search, latitude, longitude } = params;
+    const { search, latitude, longitude, skip, take } = params;
+
+    const _take = Math.max(1, take);
+    const _skip = Math.max(0, skip);
+
     const lat = latitude ? parseFloat(latitude) : null;
     const lng = longitude ? parseFloat(longitude) : null;
 
-    let churches = await this.prisma.church.findMany();
+    // Apply search filter at database level
+    const where: Prisma.ChurchWhereInput = {};
+    if (search && search.length >= 3) {
+      const keyword = search.toLowerCase();
+      where.OR = [
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { address: { contains: keyword, mode: 'insensitive' } },
+      ];
+    }
 
-    // Sort by distance if lat/long provided
+    let churches = [];
+    let total: number;
+
     if (lat != null && lng != null) {
-      churches = churches
+      const [totalCount, allChurchesData] = await this.prisma.$transaction([
+        this.prisma.church.count({ where }),
+        this.prisma.church.findMany({ where }),
+      ]);
+
+      total = totalCount;
+
+      // Calculate distance and sort
+      const churchesWithDistance = allChurchesData
         .map((church) => ({
           ...church,
           distance: this.helperService.calculateDistance(
@@ -33,24 +57,29 @@ export class ChurchService {
           ),
         }))
         .sort((a, b) => a.distance - b.distance);
-    } else {
-      churches = churches.sort((a, b) => a.name.localeCompare(b.name));
-    }
 
-    // Apply search filter (at least 3 consecutive characters match in name or address)
-    if (search && search.length >= 3) {
-      const keyword = search.toLowerCase();
-      churches = churches.filter(
-        (c) =>
-          c.name.toLowerCase().includes(keyword) ||
-          c.address.toLowerCase().includes(keyword),
-      );
+      // Apply pagination AFTER sorting
+      churches = churchesWithDistance.slice(_skip, _skip + _take);
+    } else {
+      const [totalCount, churchesData] = await this.prisma.$transaction([
+        this.prisma.church.count({ where }),
+        this.prisma.church.findMany({
+          where,
+          take: _take,
+          skip: _skip,
+          orderBy: { name: 'asc' },
+        }),
+      ]);
+
+      total = totalCount;
+      churches = churchesData;
     }
 
     return {
       message: 'Churches fetched successfully',
       data: churches,
-    };
+      total,
+    } as any;
   }
 
   async findOne(id: number) {

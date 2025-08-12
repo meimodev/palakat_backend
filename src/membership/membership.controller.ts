@@ -13,6 +13,8 @@ import {
 import { MembershipService } from './membership.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
+import { Pagination } from '../../common/pagination/pagination.decorator';
+import { PaginationParams } from '../../common/pagination/pagination.types';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('membership')
@@ -26,13 +28,19 @@ export class MembershipController {
 
   @Get()
   async findAll(
+    @Pagination() pagination: PaginationParams,
     @Query('columnId') columnId?: string,
     @Query('churchId') churchId?: string,
   ) {
     const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
     const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;
 
-    return this.membershipService.findAll(churchIdNum, columnIdNum);
+    return this.membershipService.findAll({
+      churchId: churchIdNum,
+      columnId: columnIdNum,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
   }
 
   @Get(':id')
