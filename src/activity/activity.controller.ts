@@ -13,8 +13,7 @@ import {
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { Prisma } from '@prisma/client';
-import { Pagination } from '../../common/pagination/pagination.decorator';
-import { PaginationParams } from '../../common/pagination/pagination.types';
+import { ActivityListQueryDto } from './dto/activity-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('activity')
@@ -22,28 +21,15 @@ export class ActivitiesController {
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @Get()
-  async findAll(
-    @Query('membershipId') membershipId?: string,
-    @Query('churchId') churchId?: string,
-    @Query('columnId') columnId?: string,
-    @Query('startTimestamp') startTimestamp?: string,
-    @Query('endTimestamp') endTimestamp?: string,
-    @Pagination() pagination?: PaginationParams,
-  ) {
-    const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
-    const church_id = churchId ? parseInt(churchId, 10) : undefined;
-    const column_id = columnId ? parseInt(columnId, 10) : undefined;
-    const startDate = startTimestamp ? new Date(startTimestamp) : undefined;
-    const endDate = endTimestamp ? new Date(endTimestamp) : undefined;
-
+  async findAll(@Query() query: ActivityListQueryDto) {
     return this.activitiesService.findAll({
-      membershipId: membership_id,
-      churchId: church_id,
-      columnId: column_id,
-      startTimestamp: startDate,
-      endTimestamp: endDate,
-      skip: pagination?.skip ?? 0,
-      take: pagination?.take ?? 20,
+      membershipId: query.membershipId,
+      churchId: query.churchId,
+      columnId: query.columnId,
+      startTimestamp: query.startTimestamp,
+      endTimestamp: query.endTimestamp,
+      skip: query.skip,
+      take: query.take,
     });
   }
 
