@@ -13,8 +13,7 @@ import {
 import { MembershipService } from './membership.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
-import { Pagination } from '../../common/pagination/pagination.decorator';
-import { PaginationParams } from '../../common/pagination/pagination.types';
+import { MembershipListQueryDto } from './dto/membership-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('membership')
@@ -27,19 +26,12 @@ export class MembershipController {
   }
 
   @Get()
-  async findAll(
-    @Pagination() pagination: PaginationParams,
-    @Query('columnId') columnId?: string,
-    @Query('churchId') churchId?: string,
-  ) {
-    const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
-    const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;
-
+  async findAll(@Query() query: MembershipListQueryDto) {
     return this.membershipService.findAll({
-      churchId: churchIdNum,
-      columnId: columnIdNum,
-      skip: pagination.skip,
-      take: pagination.take,
+      churchId: query.churchId,
+      columnId: query.columnId,
+      skip: query.skip,
+      take: query.take,
     });
   }
 
