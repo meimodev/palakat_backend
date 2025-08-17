@@ -44,15 +44,13 @@ export class MembershipService {
       where.columnId = columnId;
     }
 
-    const _take = Math.max(1, take);
-    const _skip = Math.max(0, skip);
 
     const [total, memberships] = await this.prisma.$transaction([
       this.prisma.membership.count({ where }),
       this.prisma.membership.findMany({
         where,
-        take: _take,
-        skip: _skip,
+        take,
+        skip,
         orderBy: { id: 'desc' },
         include: {
           account: true,

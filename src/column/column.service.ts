@@ -9,8 +9,6 @@ export class ColumnService {
   async getColumns(params: {churchId? : number; skip: number, take: number}) {
     const { churchId, skip, take } = params;
 
-    const _skip = Math.max(0, skip);
-    const _take = Math.max(1, take);
 
     const where: Prisma.ColumnWhereInput = {};
     if (churchId) where.churchId = churchId;
@@ -19,8 +17,8 @@ export class ColumnService {
       this.prismaService.column.count({ where }),
       this.prismaService.column.findMany({
         where,
-        skip : _skip,
-        take : _take,
+        skip,
+        take,
         orderBy: { name: 'asc' },
       }),
     ]);

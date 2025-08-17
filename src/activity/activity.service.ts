@@ -24,8 +24,6 @@ export class ActivitiesService {
       skip,
       take,
     } = params;
-    const _take = Math.max(1, take);
-    const _skip = Math.max(0, skip);
 
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
@@ -49,8 +47,8 @@ export class ActivitiesService {
       this.prisma.activity.count({ where }),
       this.prisma.activity.findMany({
         where,
-        take: _take,
-        skip: _skip,
+        take,
+        skip,
         orderBy: { date: 'desc' },
       }),
     ]);

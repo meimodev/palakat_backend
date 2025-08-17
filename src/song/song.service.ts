@@ -42,15 +42,13 @@ export class SongService {
       ];
     }
 
-    const _take = Math.max(1, take);
-    const _skip = Math.max(0, skip);
 
     const [total, songs] = await this.prisma.$transaction([
       this.prisma.song.count({ where }),
       this.prisma.song.findMany({
         where,
-        take: _take,
-        skip: _skip,
+        take,
+        skip,
         orderBy: { id: 'desc' },
         include: {
           parts: true,

@@ -18,8 +18,6 @@ export class ChurchService {
   }) {
     const { search, latitude, longitude, skip, take } = params;
 
-    const _take = Math.max(1, take);
-    const _skip = Math.max(0, skip);
 
     const lat = latitude ? parseFloat(latitude) : null;
     const lng = longitude ? parseFloat(longitude) : null;
@@ -59,14 +57,14 @@ export class ChurchService {
         .sort((a, b) => a.distance - b.distance);
 
       // Apply pagination AFTER sorting
-      churches = churchesWithDistance.slice(_skip, _skip + _take);
+  churches = churchesWithDistance.slice(skip, skip + take);
     } else {
       const [totalCount, churchesData] = await this.prisma.$transaction([
         this.prisma.church.count({ where }),
         this.prisma.church.findMany({
           where,
-          take: _take,
-          skip: _skip,
+          take,
+          skip,
           orderBy: { name: 'asc' },
         }),
       ]);
