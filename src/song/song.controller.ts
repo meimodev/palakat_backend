@@ -12,8 +12,7 @@ import { Prisma } from '@prisma/client';
 import { Controller, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { SongService } from './song.service';
-import { Pagination } from '../../common/pagination/pagination.decorator';
-import { PaginationParams } from '../../common/pagination/pagination.types';
+import { SongListQueryDto } from './dto/song-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('song')
@@ -26,14 +25,11 @@ export class SongController {
   }
 
   @Get()
-  async findAll(
-    @Pagination() pagination: PaginationParams,
-    @Query('search') search?: string,
-  ) {
+  async findAll(@Query() query: SongListQueryDto) {
     return this.songService.findAll({
-      search,
-      skip: pagination.skip,
-      take: pagination.take,
+      search: query.search,
+      skip: query.skip,
+      take: query.take,
     });
   }
 
