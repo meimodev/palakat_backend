@@ -14,12 +14,6 @@ export interface PaginationMeta {
   hasPrev: boolean;
 }
 
-export type PaginatedResponse<T> = {
-  message?: string;
-  data: T[];
-  pagination: PaginationMeta;
-};
-
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 100;
