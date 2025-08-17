@@ -13,8 +13,7 @@ import {
 import { ColumnService } from './column.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
-import { Pagination } from 'common/pagination/pagination.decorator';
-import { PaginationParams } from 'common/pagination/pagination.types';
+import { ColumnListQueryDto } from './dto/column-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('column')
@@ -22,15 +21,11 @@ export class ColumnController {
   constructor(private readonly columnService: ColumnService) {}
 
   @Get()
-  async getColumns(
-    @Pagination() pagination: PaginationParams,
-    @Query('churchId') churchId?: string,
-  ) {
-    const ChurchId = churchId ? parseInt(churchId, 10) : undefined;
+  async getColumns(@Query() query: ColumnListQueryDto) {
     return this.columnService.getColumns({
-      churchId: ChurchId,
-      skip: pagination.skip,
-      take: pagination.take,
+      churchId: query.churchId,
+      skip: query.skip,
+      take: query.take,
     });
   }
 
