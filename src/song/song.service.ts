@@ -42,7 +42,6 @@ export class SongService {
       ];
     }
 
-
     const [total, songs] = await this.prisma.$transaction([
       this.prisma.song.count({ where }),
       this.prisma.song.findMany({

@@ -18,7 +18,6 @@ export class ChurchService {
   }) {
     const { search, latitude, longitude, skip, take } = params;
 
-
     const lat = latitude ? parseFloat(latitude) : null;
     const lng = longitude ? parseFloat(longitude) : null;
 
@@ -57,7 +56,7 @@ export class ChurchService {
         .sort((a, b) => a.distance - b.distance);
 
       // Apply pagination AFTER sorting
-  churches = churchesWithDistance.slice(skip, skip + take);
+      churches = churchesWithDistance.slice(skip, skip + take);
     } else {
       const [totalCount, churchesData] = await this.prisma.$transaction([
         this.prisma.church.count({ where }),

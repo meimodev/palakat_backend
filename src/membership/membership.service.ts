@@ -44,7 +44,6 @@ export class MembershipService {
       where.columnId = columnId;
     }
 
-
     const [total, memberships] = await this.prisma.$transaction([
       this.prisma.membership.count({ where }),
       this.prisma.membership.findMany({

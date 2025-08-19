@@ -6,9 +6,8 @@ import { PrismaService } from 'nestjs-prisma';
 export class ColumnService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getColumns(params: {churchId? : number; skip: number, take: number}) {
+  async getColumns(params: { churchId?: number; skip: number; take: number }) {
     const { churchId, skip, take } = params;
-
 
     const where: Prisma.ColumnWhereInput = {};
     if (churchId) where.churchId = churchId;
@@ -24,10 +23,10 @@ export class ColumnService {
     ]);
 
     return {
-      message : 'Columns fetched successfully',
+      message: 'Columns fetched successfully',
       data: columns,
       total,
-    }
+    };
   }
 
   async findOne(id: number) {
