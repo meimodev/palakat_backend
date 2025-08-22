@@ -22,11 +22,7 @@ export class ColumnController {
 
   @Get()
   async getColumns(@Query() query: ColumnListQueryDto) {
-    return this.columnService.getColumns({
-      churchId: query.churchId,
-      skip: query.skip,
-      take: query.take,
-    });
+  return this.columnService.getColumns(query);
   }
 
   @Get(':id')

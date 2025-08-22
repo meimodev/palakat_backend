@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
+import { ColumnListQueryDto } from './dto/column-list.dto';
 
 @Injectable()
 export class ColumnService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getColumns(params: { churchId?: number; skip: number; take: number }) {
-    const { churchId, skip, take } = params;
+  async getColumns(query: ColumnListQueryDto) {
+    const { churchId, skip, take } = query;
 
     const where: Prisma.ColumnWhereInput = {};
     if (churchId) where.churchId = churchId;
