@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Membership, Prisma } from '@prisma/client';
+import { MembershipListQueryDto } from './dto/membership-list.dto';
 
 @Injectable()
 export class MembershipService {
@@ -24,17 +25,12 @@ export class MembershipService {
     };
   }
 
-  async findAll(params: {
-    churchId?: number;
-    columnId?: number;
-    skip: number;
-    take: number;
-  }): Promise<{
+  async findAll(query: MembershipListQueryDto): Promise<{
     message: string;
     data: Membership[];
     total: number;
   }> {
-    const { churchId, columnId, skip, take } = params ?? ({} as any);
+    const { churchId, columnId, skip, take } = query ?? ({} as any);
     const where: Prisma.MembershipWhereInput = {};
 
     if (churchId) {
