@@ -22,15 +22,7 @@ export class ActivitiesController {
 
   @Get()
   async findAll(@Query() query: ActivityListQueryDto) {
-    return this.activitiesService.findAll({
-      membershipId: query.membershipId,
-      churchId: query.churchId,
-      columnId: query.columnId,
-      startTimestamp: query.startTimestamp,
-      endTimestamp: query.endTimestamp,
-      skip: query.skip,
-      take: query.take,
-    });
+  return this.activitiesService.findAll(query);
   }
 
   @Get(':id')

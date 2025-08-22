@@ -1,20 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Activity, Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
+import { ActivityListQueryDto } from './dto/activity-list.dto';
 
 @Injectable()
 export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(params: {
-    membershipId?: number;
-    churchId?: number;
-    columnId?: number;
-    startTimestamp?: Date;
-    endTimestamp?: Date;
-    skip: number;
-    take: number;
-  }) {
+  async findAll(query: ActivityListQueryDto) {
     const {
       membershipId,
       churchId,
@@ -23,7 +16,7 @@ export class ActivitiesService {
       endTimestamp,
       skip,
       take,
-    } = params;
+    } = query;
 
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
