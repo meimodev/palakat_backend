@@ -26,7 +26,7 @@ export class SongPartController {
 
   @Get()
   async findAll(@Query() query: SongPartListQueryDto) {
-  return this.songPartService.findAll(query);
+    return this.songPartService.findAll(query);
   }
 
   @Get(':id')

@@ -22,7 +22,7 @@ export class ActivitiesController {
 
   @Get()
   async findAll(@Query() query: ActivityListQueryDto) {
-  return this.activitiesService.findAll(query);
+    return this.activitiesService.findAll(query);
   }
 
   @Get(':id')

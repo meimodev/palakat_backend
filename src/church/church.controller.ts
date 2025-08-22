@@ -22,7 +22,7 @@ export class ChurchController {
 
   @Get()
   async getChurches(@Query() query: ChurchListQueryDto) {
-  return this.churchService.getChurches(query);
+    return this.churchService.getChurches(query);
   }
 
   @Get(':id')

@@ -27,7 +27,7 @@ export class MembershipController {
 
   @Get()
   async findAll(@Query() query: MembershipListQueryDto) {
-  return this.membershipService.findAll(query);
+    return this.membershipService.findAll(query);
   }
 
   @Get(':id')

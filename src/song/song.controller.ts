@@ -26,7 +26,7 @@ export class SongController {
 
   @Get()
   async findAll(@Query() query: SongListQueryDto) {
-  return this.songService.findAll(query);
+    return this.songService.findAll(query);
   }
 
   @Get(':id')

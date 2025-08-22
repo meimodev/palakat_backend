@@ -13,8 +13,8 @@ export class ChurchService {
   async getChurches(query: ChurchListQueryDto) {
     const { search, latitude, longitude, skip, take } = query;
 
-  const lat = typeof latitude === 'number' ? latitude : null;
-  const lng = typeof longitude === 'number' ? longitude : null;
+    const lat = typeof latitude === 'number' ? latitude : null;
+    const lng = typeof longitude === 'number' ? longitude : null;
 
     // Apply search filter at database level
     const where: Prisma.ChurchWhereInput = {};
