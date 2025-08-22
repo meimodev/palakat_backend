@@ -28,12 +28,4 @@ export class ActivityListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @Type(() => Date)
   endTimestamp?: Date;
-
-  @ValidateIf(
-    (o) =>
-      o.startTimestamp && o.endTimestamp && o.startTimestamp > o.endTimestamp,
-  )
-  get invalidRange() {
-    throw new Error('startTimestamp must be before or equal to endTimestamp');
-  }
 }
