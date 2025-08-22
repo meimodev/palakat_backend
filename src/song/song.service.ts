@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Prisma } from '@prisma/client';
+import { SongListQueryDto } from './dto/song-list.dto';
 
 @Injectable()
 export class SongService {
@@ -16,8 +17,8 @@ export class SongService {
     };
   }
 
-  async findAll(params: { search?: string; skip: number; take: number }) {
-    const { search, skip, take } = params ?? ({} as any);
+  async findAll(query: SongListQueryDto) {
+    const { search, skip, take } = query ?? ({} as any);
 
     const where: Prisma.SongWhereInput = {};
 
