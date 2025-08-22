@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
+import { BadRequestException } from '@nestjs/common';
 import { PaginationQueryDto } from '../../../common/pagination/pagination.dto';
 
 export class ActivityListQueryDto extends PaginationQueryDto {
