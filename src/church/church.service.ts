@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { HelperService } from 'common/helper/helper.service';
+import { ChurchListQueryDto } from './dto/church-list.dto';
 
 @Injectable()
 export class ChurchService {
@@ -9,17 +10,11 @@ export class ChurchService {
     private prisma: PrismaService,
     private helperService: HelperService,
   ) {}
-  async getChurches(params: {
-    search?: string;
-    latitude?: string;
-    longitude?: string;
-    skip: number;
-    take: number;
-  }) {
-    const { search, latitude, longitude, skip, take } = params;
+  async getChurches(query: ChurchListQueryDto) {
+    const { search, latitude, longitude, skip, take } = query;
 
-    const lat = latitude ? parseFloat(latitude) : null;
-    const lng = longitude ? parseFloat(longitude) : null;
+  const lat = typeof latitude === 'number' ? latitude : null;
+  const lng = typeof longitude === 'number' ? longitude : null;
 
     // Apply search filter at database level
     const where: Prisma.ChurchWhereInput = {};

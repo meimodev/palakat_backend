@@ -22,13 +22,7 @@ export class ChurchController {
 
   @Get()
   async getChurches(@Query() query: ChurchListQueryDto) {
-    return this.churchService.getChurches({
-      search: query.search,
-      latitude: query.latitude?.toString(),
-      longitude: query.longitude?.toString(),
-      skip: query.skip,
-      take: query.take,
-    });
+  return this.churchService.getChurches(query);
   }
 
   @Get(':id')
