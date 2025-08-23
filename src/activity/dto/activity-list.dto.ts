@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination.dto';
+import { BadRequestException } from '@nestjs/common';
 
 export class ActivityListQueryDto extends PaginationQueryDto {
   @IsOptional()
@@ -28,4 +29,18 @@ export class ActivityListQueryDto extends PaginationQueryDto {
   @IsOptional()
   @Type(() => Date)
   endTimestamp?: Date;
+
+  @ValidateIf((o) => {
+    if (
+      o.startTimestamp &&
+      o.endTimestamp &&
+      o.startTimestamp > o.endTimestamp
+    ) {
+      throw new BadRequestException(
+        'startTimestamp must be before or equal to endTimestamp',
+      );
+    }
+    return false;
+  })
+  _validateDateRange?: never;
 }
