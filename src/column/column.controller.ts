@@ -8,18 +8,21 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ColumnService } from './column.service';
 import { Prisma } from '@prisma/client';
+import { AuthGuard } from '@nestjs/passport';
+import { ColumnListQueryDto } from './dto/column-list.dto';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('column')
 export class ColumnController {
   constructor(private readonly columnService: ColumnService) {}
 
   @Get()
-  async getColumns(@Query('churchId') churchId?: string) {
-    const ChurchId = churchId ? parseInt(churchId, 10) : undefined;
-    return this.columnService.getColumns(ChurchId);
+  async getColumns(@Query() query: ColumnListQueryDto) {
+    return this.columnService.getColumns(query);
   }
 
   @Get(':id')

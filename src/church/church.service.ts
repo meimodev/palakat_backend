@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { HelperService } from 'common/helper/helper.service';
+import { ChurchListQueryDto } from './dto/church-list.dto';
 
 @Injectable()
 export class ChurchService {
@@ -9,20 +10,35 @@ export class ChurchService {
     private prisma: PrismaService,
     private helperService: HelperService,
   ) {}
-  async getChurches(params: {
-    search?: string;
-    latitude?: string;
-    longitude?: string;
-  }) {
-    const { search, latitude, longitude } = params;
-    const lat = latitude ? parseFloat(latitude) : null;
-    const lng = longitude ? parseFloat(longitude) : null;
+  async getChurches(query: ChurchListQueryDto) {
+    const { search, latitude, longitude, skip, take } = query;
 
-    let churches = await this.prisma.church.findMany();
+    const lat = typeof latitude === 'number' ? latitude : null;
+    const lng = typeof longitude === 'number' ? longitude : null;
 
-    // Sort by distance if lat/long provided
+    // Apply search filter at database level
+    const where: Prisma.ChurchWhereInput = {};
+    if (search && search.length >= 3) {
+      const keyword = search.toLowerCase();
+      where.OR = [
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { address: { contains: keyword, mode: 'insensitive' } },
+      ];
+    }
+
+    let churches = [];
+    let total: number;
+
     if (lat != null && lng != null) {
-      churches = churches
+      const [totalCount, allChurchesData] = await this.prisma.$transaction([
+        this.prisma.church.count({ where }),
+        this.prisma.church.findMany({ where }),
+      ]);
+
+      total = totalCount;
+
+      // Calculate distance and sort
+      const churchesWithDistance = allChurchesData
         .map((church) => ({
           ...church,
           distance: this.helperService.calculateDistance(
@@ -33,24 +49,29 @@ export class ChurchService {
           ),
         }))
         .sort((a, b) => a.distance - b.distance);
-    } else {
-      churches = churches.sort((a, b) => a.name.localeCompare(b.name));
-    }
 
-    // Apply search filter (at least 3 consecutive characters match in name or address)
-    if (search && search.length >= 3) {
-      const keyword = search.toLowerCase();
-      churches = churches.filter(
-        (c) =>
-          c.name.toLowerCase().includes(keyword) ||
-          c.address.toLowerCase().includes(keyword),
-      );
+      // Apply pagination AFTER sorting
+      churches = churchesWithDistance.slice(skip, skip + take);
+    } else {
+      const [totalCount, churchesData] = await this.prisma.$transaction([
+        this.prisma.church.count({ where }),
+        this.prisma.church.findMany({
+          where,
+          take,
+          skip,
+          orderBy: { name: 'asc' },
+        }),
+      ]);
+
+      total = totalCount;
+      churches = churchesData;
     }
 
     return {
       message: 'Churches fetched successfully',
       data: churches,
-    };
+      total,
+    } as any;
   }
 
   async findOne(id: number) {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { Membership, Prisma } from '@prisma/client';
+import { MembershipListQueryDto } from './dto/membership-list.dto';
 
 @Injectable()
 export class MembershipService {
@@ -24,10 +25,12 @@ export class MembershipService {
     };
   }
 
-  async findAll(
-    churchId?: number,
-    columnId?: number,
-  ): Promise<{ message: string; data: Membership[] }> {
+  async findAll(query: MembershipListQueryDto): Promise<{
+    message: string;
+    data: Membership[];
+    total: number;
+  }> {
+    const { churchId, columnId, skip, take } = query ?? ({} as any);
     const where: Prisma.MembershipWhereInput = {};
 
     if (churchId) {
@@ -37,19 +40,25 @@ export class MembershipService {
       where.columnId = columnId;
     }
 
-    const memberships = await this.prisma.membership.findMany({
-      where,
-      include: {
-        account: true,
-        church: true,
-        column: true,
-      },
-    });
-
+    const [total, memberships] = await this.prisma.$transaction([
+      this.prisma.membership.count({ where }),
+      this.prisma.membership.findMany({
+        where,
+        take,
+        skip,
+        orderBy: { id: 'desc' },
+        include: {
+          account: true,
+          church: true,
+          column: true,
+        },
+      }),
+    ]);
     return {
       message: 'Memberships retrieved successfully',
       data: memberships,
-    };
+      total,
+    } as any;
   }
 
   async findOne(id: number): Promise<{ message: string; data: Membership }> {

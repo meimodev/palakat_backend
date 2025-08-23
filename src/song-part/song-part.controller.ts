@@ -12,6 +12,7 @@ import { Prisma } from '@prisma/client';
 import { Controller, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { SongPartService } from './song-part.service';
+import { SongPartListQueryDto } from './dto/song-part-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('song-part')
@@ -24,10 +25,8 @@ export class SongPartController {
   }
 
   @Get()
-  async findAll(
-    @Query('song_id', new ParseIntPipe({ optional: true })) songId?: number,
-  ) {
-    return this.songPartService.findAll(songId);
+  async findAll(@Query() query: SongPartListQueryDto) {
+    return this.songPartService.findAll(query);
   }
 
   @Get(':id')

@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { Activity, Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
+import { ActivityListQueryDto } from './dto/activity-list.dto';
 
 @Injectable()
 export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(
-    membershipId?: number,
-    churchId?: number,
-    columnId?: number,
-    startTimestamp?: Date,
-    endTimestamp?: Date,
-  ) {
+  async findAll(query: ActivityListQueryDto) {
+    const {
+      membershipId,
+      churchId,
+      columnId,
+      startTimestamp,
+      endTimestamp,
+      skip,
+      take,
+    } = query;
+
     const where: Prisma.ActivityWhereInput = {
       membershipId: membershipId,
       membership: {
@@ -31,12 +36,20 @@ export class ActivitiesService {
       }
     }
 
-    const activity = await this.prisma.activity.findMany({
-      where,
-    });
+    const [total, activities] = await this.prisma.$transaction([
+      this.prisma.activity.count({ where }),
+      this.prisma.activity.findMany({
+        where,
+        take,
+        skip,
+        orderBy: { date: 'desc' },
+      }),
+    ]);
+
     return {
       message: 'Activities retrieved successfully',
-      data: activity,
+      data: activities,
+      total,
     };
   }
 

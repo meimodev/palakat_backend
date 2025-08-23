@@ -13,6 +13,7 @@ import {
 import { ActivitiesService } from './activity.service';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { Prisma } from '@prisma/client';
+import { ActivityListQueryDto } from './dto/activity-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('activity')
@@ -20,26 +21,8 @@ export class ActivitiesController {
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @Get()
-  async findAll(
-    @Query('membershipId') membershipId?: string,
-    @Query('churchId') churchId?: string,
-    @Query('columnId') columnId?: string,
-    @Query('startTimestamp') startTimestamp?: string,
-    @Query('endTimestamp') endTimestamp?: string,
-  ) {
-    const membership_id = membershipId ? parseInt(membershipId, 10) : undefined;
-    const church_id = churchId ? parseInt(churchId, 10) : undefined;
-    const column_id = columnId ? parseInt(columnId, 10) : undefined;
-    const startDate = startTimestamp ? new Date(startTimestamp) : undefined;
-    const endDate = endTimestamp ? new Date(endTimestamp) : undefined;
-
-    return this.activitiesService.findAll(
-      membership_id,
-      church_id,
-      column_id,
-      startDate,
-      endDate,
-    );
+  async findAll(@Query() query: ActivityListQueryDto) {
+    return this.activitiesService.findAll(query);
   }
 
   @Get(':id')

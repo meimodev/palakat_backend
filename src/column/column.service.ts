@@ -1,20 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
+import { ColumnListQueryDto } from './dto/column-list.dto';
 
 @Injectable()
 export class ColumnService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getColumns(churchId?: number) {
-    const columns = await this.prismaService.column.findMany({
-      where: {
-        churchId: churchId,
-      },
-    });
+  async getColumns(query: ColumnListQueryDto) {
+    const { churchId, skip, take } = query;
+
+    const where: Prisma.ColumnWhereInput = {};
+    if (churchId) where.churchId = churchId;
+
+    const [total, columns] = await this.prismaService.$transaction([
+      this.prismaService.column.count({ where }),
+      this.prismaService.column.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { name: 'asc' },
+      }),
+    ]);
+
     return {
       message: 'Columns fetched successfully',
       data: columns,
+      total,
     };
   }
 

@@ -13,6 +13,7 @@ import {
 import { MembershipService } from './membership.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
+import { MembershipListQueryDto } from './dto/membership-list.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('membership')
@@ -25,14 +26,8 @@ export class MembershipController {
   }
 
   @Get()
-  async findAll(
-    @Query('columnId') columnId?: string,
-    @Query('churchId') churchId?: string,
-  ) {
-    const columnIdNum = columnId ? parseInt(columnId, 10) : undefined;
-    const churchIdNum = churchId ? parseInt(churchId, 10) : undefined;
-
-    return this.membershipService.findAll(churchIdNum, columnIdNum);
+  async findAll(@Query() query: MembershipListQueryDto) {
+    return this.membershipService.findAll(query);
   }
 
   @Get(':id')
