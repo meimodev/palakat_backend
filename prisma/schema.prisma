@@ -56,9 +56,12 @@ model Account {
   phone String @unique
   gender Gender
   married Boolean
+  dob DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  membershipId Int?
   membership Membership?
+
 }
 
 model Activity {
@@ -107,7 +110,6 @@ enum Gender {
 }
 
 enum Bipra {
-  JMT
   PKB
   WKI
   PMD

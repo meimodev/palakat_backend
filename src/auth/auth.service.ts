@@ -24,6 +24,9 @@ export class AuthService {
   async validate(phone: string) {
     const account = await this.prisma.account.findUniqueOrThrow({
       where: { phone },
+      include: {
+        membership: true,
+      },
     });
     return {
       message: 'OK',

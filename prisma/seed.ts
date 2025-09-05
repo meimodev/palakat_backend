@@ -1,4 +1,10 @@
-import { PrismaClient, Gender, Bipra, ActivityType, Book } from '@prisma/client';
+import {
+  PrismaClient,
+  Gender,
+  Bipra,
+  ActivityType,
+  Book,
+} from '@prisma/client';
 import * as process from 'node:process';
 
 const prisma = new PrismaClient();
@@ -38,6 +44,8 @@ async function main() {
         phone: '081234567890',
         gender: Gender.MALE,
         married: true,
+        dob: new Date('1990-01-01'),
+        membershipId: 5,
       },
     }),
     prisma.account.create({
@@ -46,6 +54,8 @@ async function main() {
         phone: '081234567891',
         gender: Gender.FEMALE,
         married: false,
+        dob: new Date('1980-01-01'),
+        membershipId: 4,
       },
     }),
     prisma.account.create({
@@ -54,6 +64,8 @@ async function main() {
         phone: '081234567892',
         gender: Gender.MALE,
         married: true,
+        dob: new Date('1960-01-01'),
+        membershipId: 2,
       },
     }),
     prisma.account.create({
@@ -62,6 +74,8 @@ async function main() {
         phone: '081234567893',
         gender: Gender.FEMALE,
         married: true,
+        dob: new Date('1997-01-01'),
+        membershipId: 1,
       },
     }),
     prisma.account.create({
@@ -70,6 +84,8 @@ async function main() {
         phone: '081234567894',
         gender: Gender.MALE,
         married: false,
+        dob: new Date('2000-01-01'),
+        membershipId: 3,
       },
     }),
     // Additional accounts without membership
@@ -79,6 +95,7 @@ async function main() {
         phone: '081234567895',
         gender: Gender.FEMALE,
         married: true,
+        dob: new Date('2000-01-01'),
       },
     }),
     prisma.account.create({
@@ -87,6 +104,7 @@ async function main() {
         phone: '081234567896',
         gender: Gender.MALE,
         married: false,
+        dob: new Date('2000-01-01'),
       },
     }),
     prisma.account.create({
@@ -95,6 +113,7 @@ async function main() {
         phone: '081234567897',
         gender: Gender.FEMALE,
         married: true,
+        dob: new Date('2000-01-01'),
       },
     }),
     prisma.account.create({
@@ -103,6 +122,7 @@ async function main() {
         phone: '081234567898',
         gender: Gender.MALE,
         married: false,
+        dob: new Date('2000-01-01'),
       },
     }),
     prisma.account.create({
@@ -111,6 +131,7 @@ async function main() {
         phone: '081234567899',
         gender: Gender.FEMALE,
         married: false,
+        dob: new Date('2000-01-01'),
       },
     }),
   ]);
@@ -119,42 +140,162 @@ async function main() {
 
   // 2. Create Churches with Columns (100 churches)
   const churchNames = [
-    'GKI Pondok Indah', 'GPIB Immanuel', 'GKI Pluit', 'GBKP Jakarta', 'GPIB Effatha',
-    'GKI Kelapa Gading', 'GPIB Bethel', 'GKI Cawang', 'GPIB Paulus', 'GKI Tanjung Duren',
-    'GBKP Cawang', 'GPIB Gloria', 'GKI Modernland', 'GBKP Kelapa Gading', 'GPIB Bethany',
-    'GKI PIK', 'GPIB Shekinah', 'GKI Bintaro', 'GBKP Jakarta Timur', 'GPIB Hosanna',
-    'GKI Bekasi', 'GPIB Emmanuel', 'GKI Tangerang', 'GBKP Bekasi', 'GPIB Zion',
-    'GKI Bogor', 'GPIB Getsemani', 'GKI Depok', 'GBKP Depok', 'GPIB Shalom',
-    'GKI Serpong', 'GPIB Yerusalem', 'GKI Cikarang', 'GBKP Cikarang', 'GPIB Galilea',
-    'GKI Karawaci', 'GPIB Nazaret', 'GKI Lippo', 'GBKP Tangerang', 'GPIB Kanaan',
-    'GKI Sentul', 'GPIB Mahanaim', 'GKI Cibubur', 'GBKP Bogor', 'GPIB Philadelphia',
-    'GKI BSD', 'GPIB Hermon', 'GKI Cinere', 'GBKP Sentul', 'GPIB Sion',
-    'GKI Kemang', 'GPIB Karmel', 'GKI Sudirman', 'GBKP Kemang', 'GPIB Horeb',
-    'GKI Menteng', 'GPIB Bethesda', 'GKI Cikini', 'GBKP Menteng', 'GPIB Salem',
-    'GKI Matraman', 'GPIB Galilee', 'GKI Rawamangun', 'GBKP Rawamangun', 'GPIB Sinai',
-    'GKI Duren Sawit', 'GPIB Efrata', 'GKI Klender', 'GBKP Klender', 'GPIB Bethel Baru',
-    'GKI Jatinegara', 'GPIB Kana', 'GKI Cakung', 'GBKP Cakung', 'GPIB Moria',
-    'GKI Pulogadung', 'GPIB Ebenhaezer', 'GKI Kramat Jati', 'GBKP Kramat Jati', 'GPIB Gibeon',
-    'GKI Pasar Rebo', 'GPIB Antiokia', 'GKI Cipayung', 'GBKP Cipayung', 'GPIB Bethania',
-    'GKI Ciracas', 'GPIB Mahkota', 'GKI Condet', 'GBKP Condet', 'GPIB Pniel',
-    'GKI Makasar', 'GPIB Betel', 'GKI Halim', 'GBKP Halim', 'GPIB Tabor',
-    'GKI Tebet', 'GPIB Filadelfia', 'GKI Setiabudi', 'GBKP Setiabudi', 'GPIB Kapernaum',
-    'GKI Mampang', 'GPIB Betlehem', 'GKI Pancoran', 'GBKP Pancoran', 'GPIB Siloam',
-    'GKI Pasar Minggu', 'GPIB Bethsaida', 'GKI Jagakarsa', 'GBKP Jagakarsa', 'GPIB Eden'
+    'GKI Pondok Indah',
+    'GPIB Immanuel',
+    'GKI Pluit',
+    'GBKP Jakarta',
+    'GPIB Effatha',
+    'GKI Kelapa Gading',
+    'GPIB Bethel',
+    'GKI Cawang',
+    'GPIB Paulus',
+    'GKI Tanjung Duren',
+    'GBKP Cawang',
+    'GPIB Gloria',
+    'GKI Modernland',
+    'GBKP Kelapa Gading',
+    'GPIB Bethany',
+    'GKI PIK',
+    'GPIB Shekinah',
+    'GKI Bintaro',
+    'GBKP Jakarta Timur',
+    'GPIB Hosanna',
+    'GKI Bekasi',
+    'GPIB Emmanuel',
+    'GKI Tangerang',
+    'GBKP Bekasi',
+    'GPIB Zion',
+    'GKI Bogor',
+    'GPIB Getsemani',
+    'GKI Depok',
+    'GBKP Depok',
+    'GPIB Shalom',
+    'GKI Serpong',
+    'GPIB Yerusalem',
+    'GKI Cikarang',
+    'GBKP Cikarang',
+    'GPIB Galilea',
+    'GKI Karawaci',
+    'GPIB Nazaret',
+    'GKI Lippo',
+    'GBKP Tangerang',
+    'GPIB Kanaan',
+    'GKI Sentul',
+    'GPIB Mahanaim',
+    'GKI Cibubur',
+    'GBKP Bogor',
+    'GPIB Philadelphia',
+    'GKI BSD',
+    'GPIB Hermon',
+    'GKI Cinere',
+    'GBKP Sentul',
+    'GPIB Sion',
+    'GKI Kemang',
+    'GPIB Karmel',
+    'GKI Sudirman',
+    'GBKP Kemang',
+    'GPIB Horeb',
+    'GKI Menteng',
+    'GPIB Bethesda',
+    'GKI Cikini',
+    'GBKP Menteng',
+    'GPIB Salem',
+    'GKI Matraman',
+    'GPIB Galilee',
+    'GKI Rawamangun',
+    'GBKP Rawamangun',
+    'GPIB Sinai',
+    'GKI Duren Sawit',
+    'GPIB Efrata',
+    'GKI Klender',
+    'GBKP Klender',
+    'GPIB Bethel Baru',
+    'GKI Jatinegara',
+    'GPIB Kana',
+    'GKI Cakung',
+    'GBKP Cakung',
+    'GPIB Moria',
+    'GKI Pulogadung',
+    'GPIB Ebenhaezer',
+    'GKI Kramat Jati',
+    'GBKP Kramat Jati',
+    'GPIB Gibeon',
+    'GKI Pasar Rebo',
+    'GPIB Antiokia',
+    'GKI Cipayung',
+    'GBKP Cipayung',
+    'GPIB Bethania',
+    'GKI Ciracas',
+    'GPIB Mahkota',
+    'GKI Condet',
+    'GBKP Condet',
+    'GPIB Pniel',
+    'GKI Makasar',
+    'GPIB Betel',
+    'GKI Halim',
+    'GBKP Halim',
+    'GPIB Tabor',
+    'GKI Tebet',
+    'GPIB Filadelfia',
+    'GKI Setiabudi',
+    'GBKP Setiabudi',
+    'GPIB Kapernaum',
+    'GKI Mampang',
+    'GPIB Betlehem',
+    'GKI Pancoran',
+    'GBKP Pancoran',
+    'GPIB Siloam',
+    'GKI Pasar Minggu',
+    'GPIB Bethsaida',
+    'GKI Jagakarsa',
+    'GBKP Jagakarsa',
+    'GPIB Eden',
   ];
 
   const areas = [
-    'Jakarta Selatan', 'Jakarta Pusat', 'Jakarta Utara', 'Jakarta Timur', 'Jakarta Barat',
-    'Bekasi', 'Tangerang', 'Depok', 'Bogor', 'Tangerang Selatan'
+    'Jakarta Selatan',
+    'Jakarta Pusat',
+    'Jakarta Utara',
+    'Jakarta Timur',
+    'Jakarta Barat',
+    'Bekasi',
+    'Tangerang',
+    'Depok',
+    'Bogor',
+    'Tangerang Selatan',
   ];
 
   const streets = [
-    'Jl. Sudirman', 'Jl. Thamrin', 'Jl. Gatot Subroto', 'Jl. Kuningan', 'Jl. Senayan',
-    'Jl. Kemang Raya', 'Jl. Radio Dalam', 'Jl. Fatmawati', 'Jl. TB Simatupang', 'Jl. Ampera',
-    'Jl. Pahlawan', 'Jl. Veteran', 'Jl. Diponegoro', 'Jl. Imam Bonjol', 'Jl. Cut Meutia',
-    'Jl. Menteng Raya', 'Jl. Cikini', 'Jl. Salemba', 'Jl. Matraman', 'Jl. Senen',
-    'Jl. Kelapa Gading', 'Jl. Sunter', 'Jl. Pluit', 'Jl. Pantai Indah', 'Jl. Ancol',
-    'Jl. Cempaka Putih', 'Jl. Kemayoran', 'Jl. Tanjung Priok', 'Jl. Kelapa Sawit', 'Jl. Gading Serpong'
+    'Jl. Sudirman',
+    'Jl. Thamrin',
+    'Jl. Gatot Subroto',
+    'Jl. Kuningan',
+    'Jl. Senayan',
+    'Jl. Kemang Raya',
+    'Jl. Radio Dalam',
+    'Jl. Fatmawati',
+    'Jl. TB Simatupang',
+    'Jl. Ampera',
+    'Jl. Pahlawan',
+    'Jl. Veteran',
+    'Jl. Diponegoro',
+    'Jl. Imam Bonjol',
+    'Jl. Cut Meutia',
+    'Jl. Menteng Raya',
+    'Jl. Cikini',
+    'Jl. Salemba',
+    'Jl. Matraman',
+    'Jl. Senen',
+    'Jl. Kelapa Gading',
+    'Jl. Sunter',
+    'Jl. Pluit',
+    'Jl. Pantai Indah',
+    'Jl. Ancol',
+    'Jl. Cempaka Putih',
+    'Jl. Kemayoran',
+    'Jl. Tanjung Priok',
+    'Jl. Kelapa Sawit',
+    'Jl. Gading Serpong',
   ];
 
   const columnTypes = [
@@ -163,22 +304,26 @@ async function main() {
     ['Kolom Profesional', 'Kolom Ibu-ibu', 'Kolom Bapak-bapak'],
     ['Kolom Lansia', 'Kolom Dewasa Muda'],
     ['Kolom Keluarga Muda', 'Kolom Remaja'],
-    ['Kolom Pria', 'Kolom Wanita', 'Kolom Campuran']
+    ['Kolom Pria', 'Kolom Wanita', 'Kolom Campuran'],
   ];
 
   console.log('🏛️ Creating 100 churches...');
-  
+
   const churches = [];
   for (let i = 0; i < 100; i++) {
-    const name = churchNames[i % churchNames.length] + (i >= churchNames.length ? ` ${Math.floor(i / churchNames.length) + 1}` : '');
+    const name =
+      churchNames[i % churchNames.length] +
+      (i >= churchNames.length
+        ? ` ${Math.floor(i / churchNames.length) + 1}`
+        : '');
     const area = areas[i % areas.length];
     const street = streets[i % streets.length];
     const columns = columnTypes[i % columnTypes.length];
-    
+
     // Generate coordinates around Jakarta area (-6.0 to -6.5 latitude, 106.5 to 107.0 longitude)
     const latitude = (-6.0 - Math.random() * 0.5).toFixed(4);
     const longitude = (106.5 + Math.random() * 0.5).toFixed(4);
-    
+
     const church = await prisma.church.create({
       data: {
         name: name,
@@ -186,14 +331,14 @@ async function main() {
         longitude: longitude,
         address: `${street} No. ${Math.floor(Math.random() * 200) + 1}, ${area}`,
         columns: {
-          create: columns.map(col => ({ name: col }))
+          create: columns.map((col) => ({ name: col })),
         },
       },
       include: { columns: true },
     });
-    
+
     churches.push(church);
-    
+
     if ((i + 1) % 20 === 0) {
       console.log(`   ✅ Created ${i + 1} churches...`);
     }
@@ -219,7 +364,9 @@ async function main() {
       data: {
         accountId: accounts[1].id,
         churchId: churches[1].id,
-        columnId: churches[1].columns[1] ? churches[1].columns[1].id : churches[1].columns[0].id,
+        columnId: churches[1].columns[1]
+          ? churches[1].columns[1].id
+          : churches[1].columns[0].id,
         baptize: true,
         sidi: false,
       },
@@ -241,7 +388,9 @@ async function main() {
       data: {
         accountId: accounts[3].id,
         churchId: churches[0].id,
-        columnId: churches[0].columns[1] ? churches[0].columns[1].id : churches[0].columns[0].id,
+        columnId: churches[0].columns[1]
+          ? churches[0].columns[1].id
+          : churches[0].columns[0].id,
         baptize: false,
         sidi: false,
       },
@@ -267,7 +416,7 @@ async function main() {
     prisma.activity.create({
       data: {
         membershipId: memberships[0].id,
-        bipra: Bipra.JMT,
+        bipra: Bipra.WKI,
         title: 'Kebaktian Minggu Pagi',
         location: 'Sanctuary Utama',
         latitude: '-6.2615',
@@ -348,7 +497,7 @@ async function main() {
     prisma.activity.create({
       data: {
         membershipId: memberships[3].id,
-        bipra: Bipra.JMT,
+        bipra: Bipra.PMD,
         title: 'Outreach Pemuda',
         location: 'Taman Kota',
         latitude: '-6.2000',
@@ -483,20 +632,22 @@ async function main() {
         select: {
           memberships: true,
           columns: true,
-        }
-      }
+        },
+      },
     },
     orderBy: {
       memberships: {
-        _count: 'desc'
-      }
+        _count: 'desc',
+      },
     },
-    take: 5
+    take: 5,
   });
 
   console.log('\n🏆 Top 5 Churches by Member Count:');
   topChurches.forEach((church, index) => {
-    console.log(`   ${index + 1}. ${church.name}: ${church._count.memberships} members, ${church._count.columns} columns`);
+    console.log(
+      `   ${index + 1}. ${church.name}: ${church._count.memberships} members, ${church._count.columns} columns`,
+    );
   });
 
   console.log('\n🎉 Seeding completed successfully!');
