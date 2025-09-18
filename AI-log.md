@@ -1,9 +1,11 @@
 2025-09-18 - GPT-5
+
 - Installed deps, ran typecheck
 - Fixed Prisma seed (supervisor connect, proper location create)
 - Switched Prisma client to default '@prisma/client' and regenerated client
 - Fixed imports in services/controllers
 - Build, lint, migrate status OK; ran seeding successfully
+
 # AI Interaction Log
 
 ## 2025-09-17 — GPT-5

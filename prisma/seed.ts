@@ -1,4 +1,10 @@
-import { PrismaClient, Gender, Bipra, ActivityType, Book } from '@prisma/client';
+import {
+  PrismaClient,
+  Gender,
+  Bipra,
+  ActivityType,
+  Book,
+} from '../prisma/generated/prisma';
 import * as process from 'node:process';
 
 const prisma = new PrismaClient();
