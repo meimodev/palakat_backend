@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,94 +8,144 @@ datasource db {
 }
 
 model Church {
-  id Int @default(autoincrement()) @id
-  name String
-  latitude String
-  longitude String
-  address String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  memberships Membership[]
-  columns Column[]
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  latitude            String
+  longitude           String
+  address             String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  columns             Column[]
+  memberships         Membership[]
+  membershipPositions MembershipPosition[]
 }
 
 model Column {
-  id Int @default(autoincrement()) @id
-  name String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  memberships Membership[]
-  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
-  churchId Int
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  churchId            Int
+  church              Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  memberships         Membership[]
+  membershipPositions MembershipPosition[]
 }
 
 model Membership {
-  id Int @default(autoincrement()) @id
-  baptize Boolean @default(false)
-  sidi Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  account Account @relation(fields: [accountId], references: [id])
-  accountId Int @unique
-  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  columnId Int
-  church Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
-  churchId Int
-  activities Activity[]
+  id                   Int                  @id @default(autoincrement())
+  baptize              Boolean              @default(false)
+  sidi                 Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  accountId            Int                  @unique
+  columnId             Int
+  churchId             Int
+  supervisorActivities Activity[]           @relation("SupervisorActivities")
+  approvers            Approver[]
+  account              Account              @relation(fields: [accountId], references: [id])
+  church               Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  column               Column               @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  membershipPositions  MembershipPosition[]
+}
+
+model MembershipPosition {
+  id           Int        @id @default(autoincrement())
+  name         String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  membershipId Int
+  membership   Membership @relation(fields: [membershipId], references: [id])
+  churchId     Int
+  church       Church     @relation(fields: [churchId], references: [id])
+  columnId     Int
+  column       Column     @relation(fields: [columnId], references: [id])
 }
 
 model Account {
-  id Int @default(autoincrement()) @id
-  name String
-  phone String @unique
-  gender Gender
-  married Boolean
-  dob DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int         @id @default(autoincrement())
+  name         String
+  phone        String      @unique
+  gender       Gender
+  married      Boolean
+  dob          DateTime
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
   membershipId Int?
-  membership Membership?
-
+  membership   Membership?
 }
 
 model Activity {
-  id           Int       @id @default(autoincrement())
-  membership   Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  membershipId Int       
-
+  id           Int          @id @default(autoincrement())
+  supervisorId Int
   bipra        Bipra
   title        String
-  location     String?
-  latitude     String?
-  longitude    String?
+  description  String?
+  locationId   Int?         @unique
   date         DateTime?
   note         String?
   fileUrl      String?
   activityType ActivityType
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  supervisor   Membership   @relation("SupervisorActivities", fields: [supervisorId], references: [id], onDelete: Cascade)
+  approvers    Approver[]
+  location     Location?    @relation(fields: [locationId], references: [id])
+
+  @@index([date])
+  @@index([supervisorId])
+}
+
+// Helpful indexes for query performance
+
+model Location {
+  id        Int       @id @default(autoincrement())
+  name      String
+  latitude  Decimal   @db.Decimal(9, 6)
+  longitude Decimal   @db.Decimal(9, 6)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  activity  Activity?
+}
+
+model Approver {
+  id           Int            @id @default(autoincrement())
+  membershipId Int
+  membership   Membership     @relation(fields: [membershipId], references: [id])
+  activityId   Int
+  activity     Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  status       ApprovalStatus @default(UNCONFIRMED)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([activityId, membershipId])
+  @@index([activityId])
+  @@index([membershipId])
+}
+
+enum ApprovalStatus {
+  UNCONFIRMED
+  APPROVED
+  REJECTED
 }
 
 model Song {
-  id Int @default(autoincrement()) @id
-  title String
-  index Int
-  book Book
-  parts SongPart[]
-  link String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@unique([index])
+  id        Int        @id @default(autoincrement())
+  title     String
+  index     Int        @unique
+  book      Book
+  link      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  parts     SongPart[]
 }
 
 model SongPart {
-  id Int @default(autoincrement()) @id
-  index Int
-  name String
-  content String @db.Text
-
-  songId Int
-  song Song @relation(fields: [songId], references: [id])
+  id      Int    @id @default(autoincrement())
+  index   Int
+  name    String
+  content String
+  songId  Int
+  song    Song   @relation(fields: [songId], references: [id])
 }
 
 enum Gender {

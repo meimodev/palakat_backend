@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Activity, Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { ActivityListQueryDto } from './dto/activity-list.dto';
 
@@ -18,9 +17,9 @@ export class ActivitiesService {
       take,
     } = query;
 
-    const where: Prisma.ActivityWhereInput = {
-      membershipId: membershipId,
-      membership: {
+    const where: any = {
+      supervisorId: membershipId,
+      supervisor: {
         churchId: churchId,
         columnId: columnId,
       },
@@ -36,13 +35,33 @@ export class ActivitiesService {
       }
     }
 
-    const [total, activities] = await this.prisma.$transaction([
-      this.prisma.activity.count({ where }),
-      this.prisma.activity.findMany({
+    const [total, activities] = await (this.prisma as any).$transaction([
+      (this.prisma as any).activity.count({ where }),
+      (this.prisma as any).activity.findMany({
         where,
         take,
         skip,
         orderBy: { date: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          date: true,
+          activityType: true,
+          supervisorId: true,
+          supervisor: {
+            select: {
+              id: true,
+              accountId: true,
+              churchId: true,
+              columnId: true,
+            },
+          },
+          location: {
+            select: { id: true, name: true, latitude: true, longitude: true },
+          },
+          _count: { select: { approvers: true } },
+        },
       }),
     ]);
 
@@ -54,8 +73,12 @@ export class ActivitiesService {
   }
 
   async findOne(id: number) {
-    const activity = await this.prisma.activity.findUniqueOrThrow({
+    const activity = await (this.prisma as any).activity.findUniqueOrThrow({
       where: { id },
+      include: {
+        supervisor: true,
+        location: true,
+      },
     });
     return {
       message: 'Activity retrieved successfully',
@@ -64,7 +87,7 @@ export class ActivitiesService {
   }
 
   async remove(id: number) {
-    await this.prisma.activity.delete({
+    await (this.prisma as any).activity.delete({
       where: { id },
     });
     return {
@@ -73,12 +96,13 @@ export class ActivitiesService {
   }
 
   async create(
-    createActivityDto: Prisma.ActivityCreateInput,
-  ): Promise<{ message: string; data: Activity }> {
-    const activity = await this.prisma.activity.create({
+    createActivityDto: any,
+  ): Promise<{ message: string; data: any }> {
+    const activity = await (this.prisma as any).activity.create({
       data: createActivityDto,
       include: {
-        membership: {},
+        supervisor: true,
+        location: true,
       },
     });
     return {
@@ -89,9 +113,9 @@ export class ActivitiesService {
 
   async update(
     id: number,
-    updateActivityDto: Prisma.ActivityUpdateInput,
-  ): Promise<{ message: string; data: Activity }> {
-    const activity = await this.prisma.activity.update({
+    updateActivityDto: any,
+  ): Promise<{ message: string; data: any }> {
+    const activity = await (this.prisma as any).activity.update({
       where: { id },
       data: updateActivityDto,
     });

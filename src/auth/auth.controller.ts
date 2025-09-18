@@ -17,6 +17,6 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('validate')
   async validate(@Query('phone') phone?: string) {
-    return this.authService.validate(phone);
+    return this.authService.validate(phone as string);
   }
 }

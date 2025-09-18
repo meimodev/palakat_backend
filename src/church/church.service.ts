@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
-import { HelperService } from 'common/helper/helper.service';
+import { HelperService } from '../../common/helper/helper.service';
 import { ChurchListQueryDto } from './dto/church-list.dto';
 
 @Injectable()

@@ -1,10 +1,4 @@
-import {
-  PrismaClient,
-  Gender,
-  Bipra,
-  ActivityType,
-  Book,
-} from '@prisma/client';
+import { PrismaClient, Gender, Bipra, ActivityType, Book } from '@prisma/client';
 import * as process from 'node:process';
 
 const prisma = new PrismaClient();
@@ -27,6 +21,7 @@ async function main() {
   console.log('🌱 Starting seed...');
   try {
     await prisma.activity.deleteMany();
+    await prisma.membershipPosition.deleteMany();
     await prisma.membership.deleteMany();
     await prisma.column.deleteMany();
     await prisma.church.deleteMany();
@@ -45,7 +40,7 @@ async function main() {
         gender: Gender.MALE,
         married: true,
         dob: new Date('1990-01-01'),
-        membershipId: 5,
+        membershipId: 1,
       },
     }),
     prisma.account.create({
@@ -55,7 +50,7 @@ async function main() {
         gender: Gender.FEMALE,
         married: false,
         dob: new Date('1980-01-01'),
-        membershipId: 4,
+        membershipId: 2,
       },
     }),
     prisma.account.create({
@@ -65,7 +60,7 @@ async function main() {
         gender: Gender.MALE,
         married: true,
         dob: new Date('1960-01-01'),
-        membershipId: 2,
+        membershipId: 3,
       },
     }),
     prisma.account.create({
@@ -75,7 +70,7 @@ async function main() {
         gender: Gender.FEMALE,
         married: true,
         dob: new Date('1997-01-01'),
-        membershipId: 1,
+        membershipId: 4,
       },
     }),
     prisma.account.create({
@@ -85,7 +80,7 @@ async function main() {
         gender: Gender.MALE,
         married: false,
         dob: new Date('2000-01-01'),
-        membershipId: 3,
+        membershipId: 5,
       },
     }),
     // Additional accounts without membership
@@ -410,17 +405,83 @@ async function main() {
 
   console.log(`✅ Created ${memberships.length} memberships`);
 
-  // 4. Create Activities
+  // 3.a Create Membership Positions linked to memberships
+  const membershipPositions = await Promise.all([
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[0].id,
+        name: 'Penatua PKB',
+        churchId: memberships[0].churchId,
+        columnId: memberships[0].columnId,
+      },
+    }),
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[0].id,
+        name: 'Penatua Kolom 1',
+        churchId: memberships[0].churchId,
+        columnId: memberships[0].columnId,
+      },
+    }),
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[0].id,
+        name: 'Wakil Ketua',
+        churchId: memberships[0].churchId,
+        columnId: memberships[0].columnId,
+      },
+    }),
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[1].id,
+        name: 'Sekretaris',
+        churchId: memberships[1].churchId,
+        columnId: memberships[1].columnId,
+      },
+    }),
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[2].id,
+        name: 'Bendahara',
+        churchId: memberships[2].churchId,
+        columnId: memberships[2].columnId,
+      },
+    }),
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[3].id,
+        name: 'Anggota',
+        churchId: memberships[3].churchId,
+        columnId: memberships[3].columnId,
+      },
+    }),
+    prisma.membershipPosition.create({
+      data: {
+        membershipId: memberships[3].id,
+        name: 'Penatua Anak',
+        churchId: memberships[3].churchId,
+        columnId: memberships[3].columnId,
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${membershipPositions.length} membership positions`);
+
+  // 4. Create Activities (supervisor is the creator/owner; approver optional)
   const activities = await Promise.all([
     // Activities for John Doe (membership[0])
     prisma.activity.create({
       data: {
-        membershipId: memberships[0].id,
+        supervisor: { connect: { id: memberships[0].id } },
         bipra: Bipra.WKI,
         title: 'Kebaktian Minggu Pagi',
-        location: 'Sanctuary Utama',
-        latitude: '-6.2615',
-        longitude: '106.7837',
+        location: {
+          create: {
+            name: 'Sanctuary Utama',
+            latitude: '-6.2615',
+            longitude: '106.7837',
+          },
+        } as any,
         date: new Date('2025-07-13T08:00:00Z'),
         note: 'Kebaktian minggu dengan tema "Kasih yang Sejati"',
         activityType: ActivityType.SERVICE,
@@ -428,12 +489,16 @@ async function main() {
     }),
     prisma.activity.create({
       data: {
-        membershipId: memberships[0].id,
+        supervisor: { connect: { id: memberships[0].id } },
         bipra: Bipra.PKB,
         title: 'Retreat Kolom Dewasa',
-        location: 'Puncak Resort',
-        latitude: '-6.7000',
-        longitude: '107.0000',
+        location: {
+          create: {
+            name: 'Puncak Resort',
+            latitude: '-6.7000',
+            longitude: '107.0000',
+          },
+        } as any,
         date: new Date('2025-07-20T06:00:00Z'),
         note: 'Retreat 2 hari 1 malam untuk penguatan iman',
         activityType: ActivityType.EVENT,
@@ -443,10 +508,10 @@ async function main() {
     // Activities for Jane Smith (membership[1])
     prisma.activity.create({
       data: {
-        membershipId: memberships[1].id,
+        supervisor: { connect: { id: memberships[1].id } },
         bipra: Bipra.WKI,
         title: 'Pengumuman Persiapan Sidi',
-        location: 'Ruang Serbaguna',
+        // no location for this activity
         date: new Date('2025-07-15T19:00:00Z'),
         note: 'Informasi tentang kelas persiapan sidi untuk yang belum sidi',
         activityType: ActivityType.ANNOUNCEMENT,
@@ -454,12 +519,16 @@ async function main() {
     }),
     prisma.activity.create({
       data: {
-        membershipId: memberships[1].id,
+        supervisor: { connect: { id: memberships[1].id } },
         bipra: Bipra.PMD,
         title: 'Bible Study Pemuda',
-        location: 'Ruang Pemuda',
-        latitude: '-6.1751',
-        longitude: '106.8650',
+        location: {
+          create: {
+            name: 'Ruang Pemuda',
+            latitude: '-6.1751',
+            longitude: '106.8650',
+          },
+        } as any,
         date: new Date('2025-07-16T19:30:00Z'),
         note: 'Pembahasan Kitab Roma pasal 8',
         activityType: ActivityType.SERVICE,
@@ -469,12 +538,16 @@ async function main() {
     // Activities for Michael Johnson (membership[2])
     prisma.activity.create({
       data: {
-        membershipId: memberships[2].id,
+        supervisor: { connect: { id: memberships[2].id } },
         bipra: Bipra.RMJ,
         title: 'Seminar Kepemimpinan Kristiani',
-        location: 'Auditorium',
-        latitude: '-6.1279',
-        longitude: '106.7980',
+        location: {
+          create: {
+            name: 'Auditorium',
+            latitude: '-6.1279',
+            longitude: '106.7980',
+          },
+        } as any,
         date: new Date('2025-07-19T09:00:00Z'),
         note: 'Seminar untuk para profesional Kristen',
         fileUrl: 'https://example.com/seminar-leadership.pdf',
@@ -483,10 +556,10 @@ async function main() {
     }),
     prisma.activity.create({
       data: {
-        membershipId: memberships[2].id,
+        supervisor: { connect: { id: memberships[2].id } },
         bipra: Bipra.ASM,
         title: 'Doa Syafaat Pagi',
-        location: 'Kapel Doa',
+        // no location for this activity
         date: new Date('2025-07-14T05:30:00Z'),
         note: 'Doa bersama untuk keluarga dan pekerjaan',
         activityType: ActivityType.SERVICE,
@@ -496,12 +569,16 @@ async function main() {
     // Activities for Sarah Wilson (membership[3])
     prisma.activity.create({
       data: {
-        membershipId: memberships[3].id,
+        supervisor: { connect: { id: memberships[3].id } },
         bipra: Bipra.PMD,
         title: 'Outreach Pemuda',
-        location: 'Taman Kota',
-        latitude: '-6.2000',
-        longitude: '106.8000',
+        location: {
+          create: {
+            name: 'Taman Kota',
+            latitude: '-6.2000',
+            longitude: '106.8000',
+          },
+        } as any,
         date: new Date('2025-07-21T14:00:00Z'),
         note: 'Kegiatan pelayanan sosial untuk anak jalanan',
         activityType: ActivityType.EVENT,
@@ -509,7 +586,7 @@ async function main() {
     }),
     prisma.activity.create({
       data: {
-        membershipId: memberships[3].id,
+        supervisor: { connect: { id: memberships[3].id } },
         bipra: Bipra.WKI,
         title: 'Pengumuman Acara Natal Pemuda',
         date: new Date('2025-07-18T20:00:00Z'),
@@ -521,12 +598,16 @@ async function main() {
     // Activities for David Brown (membership[4])
     prisma.activity.create({
       data: {
-        membershipId: memberships[4].id,
+        supervisor: { connect: { id: memberships[4].id } },
         bipra: Bipra.PKB,
         title: 'Kebaktian Keluarga',
-        location: 'Ruang Keluarga',
-        latitude: '-6.1751',
-        longitude: '106.8650',
+        location: {
+          create: {
+            name: 'Ruang Keluarga',
+            latitude: '-6.1751',
+            longitude: '106.8650',
+          },
+        } as any,
         date: new Date('2025-07-17T18:00:00Z'),
         note: 'Kebaktian khusus untuk keluarga muda',
         activityType: ActivityType.SERVICE,
@@ -534,10 +615,16 @@ async function main() {
     }),
     prisma.activity.create({
       data: {
-        membershipId: memberships[4].id,
+        supervisor: { connect: { id: memberships[4].id } },
         bipra: Bipra.PMD,
         title: 'Workshop Parenting Kristen',
-        location: 'Ruang Seminar',
+        location: {
+          create: {
+            name: 'Ruang Seminar',
+            latitude: '-6.1800',
+            longitude: '106.8400',
+          },
+        } as any,
         date: new Date('2025-07-22T10:00:00Z'),
         note: 'Workshop untuk orangtua dalam mendidik anak secara Kristiani',
         fileUrl: 'https://example.com/parenting-workshop.pdf',
@@ -547,6 +634,38 @@ async function main() {
   ]);
 
   console.log(`✅ Created ${activities.length} activities`);
+
+  // Create approvers after activities
+  await (prisma as any).approver.createMany({
+    data: [
+      {
+        activityId: activities[0].id,
+        membershipId: memberships[2].id,
+        status: 'UNCONFIRMED',
+      },
+      {
+        activityId: activities[2].id,
+        membershipId: memberships[0].id,
+        status: 'APPROVED',
+      },
+      {
+        activityId: activities[5].id,
+        membershipId: memberships[1].id,
+        status: 'UNCONFIRMED',
+      },
+      {
+        activityId: activities[7].id,
+        membershipId: memberships[0].id,
+        status: 'REJECTED',
+      },
+      {
+        activityId: activities[9].id,
+        membershipId: memberships[2].id,
+        status: 'UNCONFIRMED',
+      },
+    ],
+    skipDuplicates: true,
+  });
 
   const songs = await Promise.all([
     prisma.song.create({
