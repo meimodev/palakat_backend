@@ -20,12 +20,23 @@ export class ColumnService {
         skip,
         take,
         orderBy: { name: 'asc' },
+        include: {
+          _count: { select: { memberships: true } },
+        },
       }),
     ]);
 
+    const data = columns.map((column: any) => {
+      const { _count, ...rest } = column;
+      return {
+        ...rest,
+        memberCount: _count?.memberships ?? 0,
+      };
+    });
+
     return {
       message: 'Columns fetched successfully',
-      data: columns,
+      data,
       total,
     };
   }

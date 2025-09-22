@@ -15,3 +15,15 @@
 2025-09-22 - Per-prompt maintenance
 
 - Appended per-prompt log entries for analysis session.
+
+2025-09-22 - Per-prompt maintenance
+
+- Updated seed in response to Prisma model changes (Church fields)
+- Continued per-prompt logging in `AI-log.md`
+- Logged update to include membership counts in column list
+
+2025-09-22 - Per-prompt maintenance
+
+- Implemented CRUD for `MembershipPosition` mirroring `column`/`song-part` patterns
+- Wired new module into `app.module.ts`
+- [2025-09-22] Planned sign-in mechanism; no memory changes required; no Prisma model edits yet.

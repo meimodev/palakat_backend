@@ -330,6 +330,18 @@ async function main() {
       data: {
         name: name,
         address: `${street} No. ${Math.floor(Math.random() * 200) + 1}, ${area}`,
+        phoneNumber:
+          Math.random() < 0.6
+            ? `021-${Math.floor(1000000 + Math.random() * 9000000)}`
+            : null,
+        email:
+          Math.random() < 0.6
+            ? `${name.toLowerCase().replace(/\s+/g, '-')}${i + 1}@example.com`
+            : null,
+        description:
+          Math.random() < 0.6
+            ? `Gereja ${name} yang terletak di ${area}.`
+            : null,
         location: {
           create: {
             name: `Lokasi ${name}`,

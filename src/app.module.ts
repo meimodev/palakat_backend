@@ -12,6 +12,7 @@ import { HelperService } from '../common/helper/helper.service';
 import { SongModule } from './song/song.module';
 import { SongPartModule } from './song-part/song-part.module';
 import { ColumnModule } from './column/column.module';
+import { MembershipPositionModule } from './membership-position/membership-position.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ColumnModule } from './column/column.module';
     SongModule,
     ColumnModule,
     SongPartModule,
+    MembershipPositionModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],

@@ -26,3 +26,14 @@
 
 - Analyzed Prisma schema, seed, and activities service for optimizations
 - Suggested index, relation, type, and seeding performance improvements
+
+### 2025-09-22 — GPT-5
+
+- Added `phoneNumber`, `email`, `description` to `Church` in `prisma/schema.prisma`
+- Updated `prisma/seed.ts` to optionally populate new fields
+- Ran Prisma generate successfully
+- Attempted migration; blocked by Postgres shadow DB collation issue
+- Updated `src/column/column.service.ts` to include `_count.memberships` in `getColumns`
+- Mapped `_count.memberships` to `memberCount` in `getColumns` response
+- Implemented `membership-position` CRUD (controller, service, module, DTO); wired into `app.module.ts`
+- [2025-09-22] GPT-5: Planned credential sign-in (username/email/phone + password); reviewed existing auth module and outlined implementation steps.
