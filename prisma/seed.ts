@@ -4,7 +4,7 @@ import {
   Bipra,
   ActivityType,
   Book,
-} from '../prisma/generated/prisma';
+} from '@prisma/client';
 import * as process from 'node:process';
 
 const prisma = new PrismaClient();
@@ -26,12 +26,18 @@ async function main() {
   }
   console.log('🌱 Starting seed...');
   try {
-    await prisma.activity.deleteMany();
-    await prisma.membershipPosition.deleteMany();
-    await prisma.membership.deleteMany();
-    await prisma.column.deleteMany();
-    await prisma.church.deleteMany();
-    await prisma.account.deleteMany();
+    await prisma.$transaction([
+      prisma.approver.deleteMany(),
+      prisma.activity.deleteMany(),
+      prisma.songPart.deleteMany(),
+      prisma.song.deleteMany(),
+      prisma.membershipPosition.deleteMany(),
+      prisma.membership.deleteMany(),
+      prisma.column.deleteMany(),
+      prisma.church.deleteMany(),
+      prisma.account.deleteMany(),
+      prisma.location.deleteMany(),
+    ]);
     console.log('🧹 Cleaned existing data...');
   } catch (e) {
     console.log('🧹Error while cleaning the current data... ', e);
@@ -46,7 +52,6 @@ async function main() {
         gender: Gender.MALE,
         married: true,
         dob: new Date('1990-01-01'),
-        membershipId: 1,
       },
     }),
     prisma.account.create({
@@ -56,7 +61,6 @@ async function main() {
         gender: Gender.FEMALE,
         married: false,
         dob: new Date('1980-01-01'),
-        membershipId: 2,
       },
     }),
     prisma.account.create({
@@ -66,7 +70,6 @@ async function main() {
         gender: Gender.MALE,
         married: true,
         dob: new Date('1960-01-01'),
-        membershipId: 3,
       },
     }),
     prisma.account.create({
@@ -76,7 +79,6 @@ async function main() {
         gender: Gender.FEMALE,
         married: true,
         dob: new Date('1997-01-01'),
-        membershipId: 4,
       },
     }),
     prisma.account.create({
@@ -86,7 +88,6 @@ async function main() {
         gender: Gender.MALE,
         married: false,
         dob: new Date('2000-01-01'),
-        membershipId: 5,
       },
     }),
     // Additional accounts without membership
@@ -328,9 +329,14 @@ async function main() {
     const church = await prisma.church.create({
       data: {
         name: name,
-        latitude: latitude,
-        longitude: longitude,
         address: `${street} No. ${Math.floor(Math.random() * 200) + 1}, ${area}`,
+        location: {
+          create: {
+            name: `Lokasi ${name}`,
+            latitude,
+            longitude,
+          },
+        },
         columns: {
           create: columns.map((col) => ({ name: col })),
         },
@@ -487,7 +493,7 @@ async function main() {
             latitude: '-6.2615',
             longitude: '106.7837',
           },
-        } as any,
+        },
         date: new Date('2025-07-13T08:00:00Z'),
         note: 'Kebaktian minggu dengan tema "Kasih yang Sejati"',
         activityType: ActivityType.SERVICE,
@@ -504,7 +510,7 @@ async function main() {
             latitude: '-6.7000',
             longitude: '107.0000',
           },
-        } as any,
+        },
         date: new Date('2025-07-20T06:00:00Z'),
         note: 'Retreat 2 hari 1 malam untuk penguatan iman',
         activityType: ActivityType.EVENT,
@@ -534,7 +540,7 @@ async function main() {
             latitude: '-6.1751',
             longitude: '106.8650',
           },
-        } as any,
+        },
         date: new Date('2025-07-16T19:30:00Z'),
         note: 'Pembahasan Kitab Roma pasal 8',
         activityType: ActivityType.SERVICE,
@@ -553,7 +559,7 @@ async function main() {
             latitude: '-6.1279',
             longitude: '106.7980',
           },
-        } as any,
+        },
         date: new Date('2025-07-19T09:00:00Z'),
         note: 'Seminar untuk para profesional Kristen',
         fileUrl: 'https://example.com/seminar-leadership.pdf',
@@ -584,7 +590,7 @@ async function main() {
             latitude: '-6.2000',
             longitude: '106.8000',
           },
-        } as any,
+        },
         date: new Date('2025-07-21T14:00:00Z'),
         note: 'Kegiatan pelayanan sosial untuk anak jalanan',
         activityType: ActivityType.EVENT,
@@ -613,7 +619,7 @@ async function main() {
             latitude: '-6.1751',
             longitude: '106.8650',
           },
-        } as any,
+        },
         date: new Date('2025-07-17T18:00:00Z'),
         note: 'Kebaktian khusus untuk keluarga muda',
         activityType: ActivityType.SERVICE,
@@ -630,7 +636,7 @@ async function main() {
             latitude: '-6.1800',
             longitude: '106.8400',
           },
-        } as any,
+        },
         date: new Date('2025-07-22T10:00:00Z'),
         note: 'Workshop untuk orangtua dalam mendidik anak secara Kristiani',
         fileUrl: 'https://example.com/parenting-workshop.pdf',
@@ -642,7 +648,7 @@ async function main() {
   console.log(`✅ Created ${activities.length} activities`);
 
   // Create approvers after activities
-  await (prisma as any).approver.createMany({
+  await prisma.approver.createMany({
     data: [
       {
         activityId: activities[0].id,
@@ -677,7 +683,7 @@ async function main() {
     prisma.song.create({
       data: {
         title: 'Amazing Grace',
-        index: 1,
+        index: 22,
         book: Book.NNBT,
         link: 'https://example.com/amazing-grace',
         parts: {
@@ -702,7 +708,7 @@ async function main() {
     prisma.song.create({
       data: {
         title: 'How Great Thou Art',
-        index: 2,
+        index: 4,
         book: Book.NKB,
         link: 'https://example.com/how-great-thou-art',
         parts: {
@@ -728,8 +734,6 @@ async function main() {
 
   console.log(`✅ Created ${songs.length} songs with parts`);
 
-  console.log(`✅ Created ${activities.length} activities`);
-
   // 6. Display summary
   console.log('\n📊 Seed Summary:');
   console.log('================');
@@ -742,7 +746,7 @@ async function main() {
   // Display accounts without membership
   const accountsWithoutMembership = await prisma.account.findMany({
     where: {
-      membership: null,
+      membership: { is: null },
     },
   });
 

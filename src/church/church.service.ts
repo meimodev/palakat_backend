@@ -32,20 +32,21 @@ export class ChurchService {
     if (lat != null && lng != null) {
       const [totalCount, allChurchesData] = await this.prisma.$transaction([
         this.prisma.church.count({ where }),
-        this.prisma.church.findMany({ where }),
+        this.prisma.church.findMany({ where, include: { location: true } }),
       ]);
 
       total = totalCount;
 
       // Calculate distance and sort
       const churchesWithDistance = allChurchesData
+        .filter((church) => church.location)
         .map((church) => ({
           ...church,
           distance: this.helperService.calculateDistance(
             lat,
             lng,
-            parseFloat(church.latitude),
-            parseFloat(church.longitude),
+            Number(church.location!.latitude),
+            Number(church.location!.longitude),
           ),
         }))
         .sort((a, b) => a.distance - b.distance);
@@ -60,6 +61,7 @@ export class ChurchService {
           take,
           skip,
           orderBy: { name: 'asc' },
+          include: { location: true },
         }),
       ]);
 
@@ -77,6 +79,7 @@ export class ChurchService {
   async findOne(id: number) {
     const church = await this.prisma.church.findUniqueOrThrow({
       where: { id },
+      include: { location: true },
     });
     return {
       message: 'Church fetched successfully',

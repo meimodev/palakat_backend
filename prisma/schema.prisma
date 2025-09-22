@@ -1,5 +1,9 @@
 generator client {
   provider = "prisma-client-js"
+}
+
+generator customClient {
+  provider = "prisma-client-js"
   output   = "../prisma/generated/prisma"
 }
 
@@ -11,14 +15,16 @@ datasource db {
 model Church {
   id                  Int                  @id @default(autoincrement())
   name                String
-  latitude            String
-  longitude           String
   address             String
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+  locationId          Int?                 @unique
+  location            Location?            @relation(fields: [locationId], references: [id])
   columns             Column[]
   memberships         Membership[]
   membershipPositions MembershipPosition[]
+
+  @@index([name])
 }
 
 model Column {
@@ -30,6 +36,8 @@ model Column {
   church              Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
   memberships         Membership[]
   membershipPositions MembershipPosition[]
+
+  @@unique([churchId, name])
 }
 
 model Membership {
@@ -47,6 +55,8 @@ model Membership {
   church               Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
   column               Column               @relation(fields: [columnId], references: [id], onDelete: Cascade)
   membershipPositions  MembershipPosition[]
+
+  @@index([churchId, columnId])
 }
 
 model MembershipPosition {
@@ -63,16 +73,15 @@ model MembershipPosition {
 }
 
 model Account {
-  id           Int         @id @default(autoincrement())
-  name         String
-  phone        String      @unique
-  gender       Gender
-  married      Boolean
-  dob          DateTime
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  membershipId Int?
-  membership   Membership?
+  id         Int         @id @default(autoincrement())
+  name       String
+  phone      String      @unique
+  gender     Gender
+  married    Boolean
+  dob        DateTime
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  membership Membership?
 }
 
 model Activity {
@@ -81,7 +90,7 @@ model Activity {
   bipra        Bipra
   title        String
   description  String?
-  locationId   Int?         @unique
+  locationId   Int?
   date         DateTime?
   note         String?
   fileUrl      String?
@@ -94,18 +103,22 @@ model Activity {
 
   @@index([date])
   @@index([supervisorId])
+  @@index([supervisorId, date])
+  @@index([activityType])
+  @@index([bipra])
 }
 
 // Helpful indexes for query performance
 
 model Location {
-  id        Int       @id @default(autoincrement())
-  name      String
-  latitude  Decimal   @db.Decimal(9, 6)
-  longitude Decimal   @db.Decimal(9, 6)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  activity  Activity?
+  id         Int        @id @default(autoincrement())
+  name       String
+  latitude   Decimal    @db.Decimal(9, 6)
+  longitude  Decimal    @db.Decimal(9, 6)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  activities Activity[]
+  church     Church?
 }
 
 model Approver {
@@ -121,6 +134,7 @@ model Approver {
   @@unique([activityId, membershipId])
   @@index([activityId])
   @@index([membershipId])
+  @@index([status])
 }
 
 enum ApprovalStatus {
@@ -147,6 +161,9 @@ model SongPart {
   content String
   songId  Int
   song    Song   @relation(fields: [songId], references: [id])
+
+  @@unique([songId, index])
+  @@index([songId])
 }
 
 enum Gender {

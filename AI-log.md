@@ -21,3 +21,8 @@
 - Refactored `Activity.approver` to many-to-many `approvers` with `Membership`.
 - Updated `prisma/seed.ts` to connect approvers via `approvers.connect`.
 - Prepared to run Prisma migration and regenerate client types.
+
+## 2025-09-22 — GPT-5
+
+- Analyzed Prisma schema, seed, and activities service for optimizations
+- Suggested index, relation, type, and seeding performance improvements

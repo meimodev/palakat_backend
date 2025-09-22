@@ -49,17 +49,8 @@ export class ActivitiesService {
           date: true,
           activityType: true,
           supervisorId: true,
-          supervisor: {
-            select: {
-              id: true,
-              accountId: true,
-              churchId: true,
-              columnId: true,
-            },
-          },
-          location: {
-            select: { id: true, name: true, latitude: true, longitude: true },
-          },
+          supervisor: true,
+          location: true,
           _count: { select: { approvers: true } },
         },
       }),

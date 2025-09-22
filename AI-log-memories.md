@@ -11,3 +11,7 @@
 - Maintain AI-log-memories.md at the repo root. On any memory change or on each prompt, update the file to reflect the current memory state with date-stamped entries.
 - For every user prompt, append an entry to AI-log.md at the repo root that includes the model name (GPT-5) and the current date, plus a brief list of actions taken.
 - Whenever the user changes a Prisma model, proactively generate or update appropriate seeding for that model (update prisma/seed.ts accordingly).
+
+2025-09-22 - Per-prompt maintenance
+
+- Appended per-prompt log entries for analysis session.
