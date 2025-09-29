@@ -13,11 +13,5 @@ export class MembershipPositionListQueryDto extends PaginationQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  columnId?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
   membershipId?: number;
 }

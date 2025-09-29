@@ -20,10 +20,7 @@ export class ChurchService {
     const where: Prisma.ChurchWhereInput = {};
     if (search && search.length >= 3) {
       const keyword = search.toLowerCase();
-      where.OR = [
-        { name: { contains: keyword, mode: 'insensitive' } },
-        { address: { contains: keyword, mode: 'insensitive' } },
-      ];
+      where.OR = [{ name: { contains: keyword, mode: 'insensitive' } }];
     }
 
     let churches = [];
@@ -39,14 +36,13 @@ export class ChurchService {
 
       // Calculate distance and sort
       const churchesWithDistance = allChurchesData
-        .filter((church) => church.location)
         .map((church) => ({
           ...church,
           distance: this.helperService.calculateDistance(
             lat,
             lng,
-            Number(church.location!.latitude),
-            Number(church.location!.longitude),
+            Number(church.location.latitude),
+            Number(church.location.longitude),
           ),
         }))
         .sort((a, b) => a.distance - b.distance);
@@ -79,7 +75,11 @@ export class ChurchService {
   async findOne(id: number) {
     const church = await this.prisma.church.findUniqueOrThrow({
       where: { id },
-      include: { location: true },
+      include: {
+        location: true,
+        columns: true,
+        membershipPositions: true,
+      },
     });
     return {
       message: 'Church fetched successfully',
@@ -110,6 +110,11 @@ export class ChurchService {
     const church = await this.prisma.church.update({
       where: { id },
       data: updateChurchDto,
+      include: {
+        location: true,
+        columns: true,
+        membershipPositions: true,
+      },
     });
     return {
       message: 'Church updated successfully',

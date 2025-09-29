@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { MembershipListQueryDto } from './dto/membership-list.dto';
 
@@ -9,6 +9,26 @@ export class MembershipService {
   async create(
     createMembershipDto: any,
   ): Promise<{ message: string; data: any }> {
+    if (!createMembershipDto?.columnId && !createMembershipDto?.churchId) {
+      throw new BadRequestException('Either columnId or churchId is required');
+    }
+
+    if (createMembershipDto?.columnId != null) {
+      const column = await (this.prisma as any).column.findUnique({
+        where: { id: createMembershipDto.columnId },
+        select: { id: true, churchId: true },
+      });
+      if (!column) {
+        throw new BadRequestException('columnId does not exist');
+      }
+      // If churchId not provided, derive from column
+      if (createMembershipDto?.churchId == null) {
+        createMembershipDto.churchId = column.churchId;
+      } else if (column.churchId !== createMembershipDto.churchId) {
+        throw new BadRequestException('columnId belongs to a different church');
+      }
+    }
+
     const membership = await (this.prisma as any).membership.create({
       data: createMembershipDto,
       include: {
@@ -83,6 +103,22 @@ export class MembershipService {
     id: number,
     updateMembershipDto: any,
   ): Promise<{ message: string; data: any }> {
+    if (updateMembershipDto?.columnId != null) {
+      const column = await (this.prisma as any).column.findUnique({
+        where: { id: updateMembershipDto.columnId },
+        select: { id: true, churchId: true },
+      });
+      if (!column) {
+        throw new BadRequestException('columnId does not exist');
+      }
+      // If churchId not provided, derive from column; else validate match
+      if (updateMembershipDto?.churchId == null) {
+        updateMembershipDto.churchId = column.churchId;
+      } else if (column.churchId !== updateMembershipDto.churchId) {
+        throw new BadRequestException('columnId belongs to a different church');
+      }
+    }
+
     const membership = await (this.prisma as any).membership.update({
       where: { id },
       data: updateMembershipDto,

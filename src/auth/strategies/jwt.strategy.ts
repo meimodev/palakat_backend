@@ -20,11 +20,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: ValidatedClient): Promise<ValidatedClient> {
-    if (!payload || !payload.clientId) {
-      throw new UnauthorizedException('Invalid JWT payload');
+  async validate(payload: any): Promise<any> {
+    if (payload?.clientId) {
+      return { clientId: payload.clientId, source: 'jwt-strategy' };
     }
-
-    return { clientId: payload.clientId, source: 'jwt-strategy' };
+    if (payload?.sub) {
+      return { userId: payload.sub, source: 'jwt-strategy' };
+    }
+    throw new UnauthorizedException('Invalid JWT payload');
   }
 }

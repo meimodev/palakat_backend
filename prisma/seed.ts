@@ -6,8 +6,19 @@ import {
   Book,
 } from '@prisma/client';
 import * as process from 'node:process';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// Generate a numeric-only phone number starting with 0, length 12–13
+function generateNumericPhoneNumber(): string {
+  const length = Math.random() < 0.5 ? 12 : 13;
+  let result = '0';
+  for (let i = 1; i < length; i++) {
+    result += Math.floor(Math.random() * 10).toString();
+  }
+  return result;
+}
 
 async function main() {
   const inServerEnvironment = !['localhost', '127.0.0.1'].some((host) =>
@@ -44,97 +55,120 @@ async function main() {
   }
 
   // 1. Create Accounts
+  const defaultPasswordHash = await bcrypt.hash('password', 12);
   const accounts = await Promise.all([
     prisma.account.create({
       data: {
         name: 'John Doe',
         phone: '081234567890',
+        email: 'john.doe@example.com',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.MALE,
         married: true,
         dob: new Date('1990-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Jane Smith',
         phone: '081234567891',
+        email: 'jane.smith@example.com',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.FEMALE,
         married: false,
         dob: new Date('1980-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Michael Johnson',
         phone: '081234567892',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.MALE,
         married: true,
         dob: new Date('1960-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Sarah Wilson',
         phone: '081234567893',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.FEMALE,
         married: true,
         dob: new Date('1997-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'David Brown',
         phone: '081234567894',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.MALE,
         married: false,
         dob: new Date('2000-01-01'),
-      },
+      } as any,
     }),
     // Additional accounts without membership
     prisma.account.create({
       data: {
         name: 'Lisa Anderson',
         phone: '081234567895',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.FEMALE,
         married: true,
         dob: new Date('2000-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Robert Taylor',
         phone: '081234567896',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.MALE,
         married: false,
         dob: new Date('2000-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Maria Garcia',
         phone: '081234567897',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.FEMALE,
         married: true,
         dob: new Date('2000-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Kevin Lee',
         phone: '081234567898',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.MALE,
         married: false,
         dob: new Date('2000-01-01'),
-      },
+      } as any,
     }),
     prisma.account.create({
       data: {
         name: 'Emma Davis',
         phone: '081234567899',
+        passwordHash: defaultPasswordHash,
+        claimed: false,
         gender: Gender.FEMALE,
         married: false,
         dob: new Date('2000-01-01'),
-      },
+      } as any,
     }),
   ]);
 
@@ -267,38 +301,7 @@ async function main() {
     'Tangerang Selatan',
   ];
 
-  const streets = [
-    'Jl. Sudirman',
-    'Jl. Thamrin',
-    'Jl. Gatot Subroto',
-    'Jl. Kuningan',
-    'Jl. Senayan',
-    'Jl. Kemang Raya',
-    'Jl. Radio Dalam',
-    'Jl. Fatmawati',
-    'Jl. TB Simatupang',
-    'Jl. Ampera',
-    'Jl. Pahlawan',
-    'Jl. Veteran',
-    'Jl. Diponegoro',
-    'Jl. Imam Bonjol',
-    'Jl. Cut Meutia',
-    'Jl. Menteng Raya',
-    'Jl. Cikini',
-    'Jl. Salemba',
-    'Jl. Matraman',
-    'Jl. Senen',
-    'Jl. Kelapa Gading',
-    'Jl. Sunter',
-    'Jl. Pluit',
-    'Jl. Pantai Indah',
-    'Jl. Ancol',
-    'Jl. Cempaka Putih',
-    'Jl. Kemayoran',
-    'Jl. Tanjung Priok',
-    'Jl. Kelapa Sawit',
-    'Jl. Gading Serpong',
-  ];
+  // removed streets since address field is removed
 
   const columnTypes = [
     ['Kolom Dewasa', 'Kolom Pemuda', 'Kolom Anak-anak'],
@@ -319,21 +322,15 @@ async function main() {
         ? ` ${Math.floor(i / churchNames.length) + 1}`
         : '');
     const area = areas[i % areas.length];
-    const street = streets[i % streets.length];
     const columns = columnTypes[i % columnTypes.length];
 
-    // Generate coordinates around Jakarta area (-6.0 to -6.5 latitude, 106.5 to 107.0 longitude)
-    const latitude = (-6.0 - Math.random() * 0.5).toFixed(4);
-    const longitude = (106.5 + Math.random() * 0.5).toFixed(4);
+    const latitude = parseFloat((-6.0 - Math.random() * 0.5).toFixed(4));
+    const longitude = parseFloat((106.5 + Math.random() * 0.5).toFixed(4));
 
     const church = await prisma.church.create({
       data: {
         name: name,
-        address: `${street} No. ${Math.floor(Math.random() * 200) + 1}, ${area}`,
-        phoneNumber:
-          Math.random() < 0.6
-            ? `021-${Math.floor(1000000 + Math.random() * 9000000)}`
-            : null,
+        phoneNumber: Math.random() < 0.6 ? generateNumericPhoneNumber() : null,
         email:
           Math.random() < 0.6
             ? `${name.toLowerCase().replace(/\s+/g, '-')}${i + 1}@example.com`
@@ -352,7 +349,7 @@ async function main() {
         columns: {
           create: columns.map((col) => ({ name: col })),
         },
-      },
+      } as any,
       include: { columns: true },
     });
 
@@ -433,59 +430,52 @@ async function main() {
   const membershipPositions = await Promise.all([
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[0].id,
+        membership: { connect: { id: memberships[0].id } },
         name: 'Penatua PKB',
-        churchId: memberships[0].churchId,
-        columnId: memberships[0].columnId,
-      },
+        church: { connect: { id: memberships[0].churchId } },
+      } as any,
     }),
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[0].id,
+        membership: { connect: { id: memberships[0].id } },
         name: 'Penatua Kolom 1',
-        churchId: memberships[0].churchId,
-        columnId: memberships[0].columnId,
-      },
+        church: { connect: { id: memberships[0].churchId } },
+      } as any,
     }),
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[0].id,
+        membership: { connect: { id: memberships[0].id } },
         name: 'Wakil Ketua',
-        churchId: memberships[0].churchId,
-        columnId: memberships[0].columnId,
-      },
+        church: { connect: { id: memberships[0].churchId } },
+      } as any,
     }),
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[1].id,
+        membership: { connect: { id: memberships[1].id } },
         name: 'Sekretaris',
-        churchId: memberships[1].churchId,
-        columnId: memberships[1].columnId,
-      },
+        church: { connect: { id: memberships[1].churchId } },
+      } as any,
     }),
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[2].id,
+        membership: { connect: { id: memberships[2].id } },
         name: 'Bendahara',
-        churchId: memberships[2].churchId,
-        columnId: memberships[2].columnId,
-      },
+        church: { connect: { id: memberships[2].churchId } },
+      } as any,
     }),
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[3].id,
+        membership: { connect: { id: memberships[3].id } },
         name: 'Anggota',
-        churchId: memberships[3].churchId,
-        columnId: memberships[3].columnId,
-      },
+        church: { connect: { id: memberships[3].churchId } },
+      } as any,
     }),
     prisma.membershipPosition.create({
       data: {
-        membershipId: memberships[3].id,
+        membership: { connect: { id: memberships[3].id } },
         name: 'Penatua Anak',
-        churchId: memberships[3].churchId,
-        columnId: memberships[3].columnId,
-      },
+        church: { connect: { id: memberships[3].churchId } },
+      } as any,
     }),
   ]);
 
@@ -502,8 +492,8 @@ async function main() {
         location: {
           create: {
             name: 'Sanctuary Utama',
-            latitude: '-6.2615',
-            longitude: '106.7837',
+            latitude: -6.2615,
+            longitude: 106.7837,
           },
         },
         date: new Date('2025-07-13T08:00:00Z'),
@@ -519,8 +509,8 @@ async function main() {
         location: {
           create: {
             name: 'Puncak Resort',
-            latitude: '-6.7000',
-            longitude: '107.0000',
+            latitude: -6.7,
+            longitude: 107.0,
           },
         },
         date: new Date('2025-07-20T06:00:00Z'),
@@ -549,8 +539,8 @@ async function main() {
         location: {
           create: {
             name: 'Ruang Pemuda',
-            latitude: '-6.1751',
-            longitude: '106.8650',
+            latitude: -6.1751,
+            longitude: 106.865,
           },
         },
         date: new Date('2025-07-16T19:30:00Z'),
@@ -568,8 +558,8 @@ async function main() {
         location: {
           create: {
             name: 'Auditorium',
-            latitude: '-6.1279',
-            longitude: '106.7980',
+            latitude: -6.1279,
+            longitude: 106.798,
           },
         },
         date: new Date('2025-07-19T09:00:00Z'),
@@ -599,8 +589,8 @@ async function main() {
         location: {
           create: {
             name: 'Taman Kota',
-            latitude: '-6.2000',
-            longitude: '106.8000',
+            latitude: -6.2,
+            longitude: 106.8,
           },
         },
         date: new Date('2025-07-21T14:00:00Z'),
@@ -628,8 +618,8 @@ async function main() {
         location: {
           create: {
             name: 'Ruang Keluarga',
-            latitude: '-6.1751',
-            longitude: '106.8650',
+            latitude: -6.1751,
+            longitude: 106.865,
           },
         },
         date: new Date('2025-07-17T18:00:00Z'),
@@ -645,8 +635,8 @@ async function main() {
         location: {
           create: {
             name: 'Ruang Seminar',
-            latitude: '-6.1800',
-            longitude: '106.8400',
+            latitude: -6.18,
+            longitude: 106.84,
           },
         },
         date: new Date('2025-07-22T10:00:00Z'),

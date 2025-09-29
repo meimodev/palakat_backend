@@ -19,12 +19,10 @@ export class MembershipPositionService {
   }
 
   async findAll(query: MembershipPositionListQueryDto) {
-    const { churchId, columnId, membershipId, skip, take } =
-      query ?? ({} as any);
+    const { churchId, membershipId, skip, take } = query ?? ({} as any);
 
     const where: Prisma.MembershipPositionWhereInput = {};
     if (churchId) where.churchId = churchId;
-    if (columnId) where.columnId = columnId;
     if (membershipId) where.membershipId = membershipId;
 
     const [total, items] = await this.prisma.$transaction([
@@ -33,7 +31,7 @@ export class MembershipPositionService {
         where,
         take,
         skip,
-        orderBy: { id: 'desc' },
+        orderBy: { name: 'asc' },
       }),
     ]);
 
@@ -47,8 +45,35 @@ export class MembershipPositionService {
   async findOne(id: number) {
     const item = await this.prisma.membershipPosition.findUniqueOrThrow({
       where: { id },
+      include: {
+        membership: {
+          select: {
+            membershipPositions: {
+              select: {
+                name: true,
+              },
+            },
+            account: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
-    return { message: 'OK', data: item } as const;
+
+    const membership = item.membership;
+    const { ...rest } = item;
+    const membershipData = {
+      positions: membership?.membershipPositions?.map((p) => p.name) ?? [],
+      accountName: membership?.account?.name ?? null,
+    } as const;
+
+    return {
+      message: 'OK',
+      data: { ...rest, ...membershipData },
+    };
   }
 
   async update(id: number, dto: Prisma.MembershipPositionUpdateInput) {
@@ -56,7 +81,7 @@ export class MembershipPositionService {
       where: { id },
       data: dto,
     });
-    return { message: 'OK', data: item } as const;
+    return { message: 'OK', data: item };
   }
 
   async delete(id: number) {

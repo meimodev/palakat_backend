@@ -15,14 +15,13 @@ datasource db {
 model Church {
   id                  Int                  @id @default(autoincrement())
   name                String
-  address             String
   phoneNumber         String?
   email               String?
   description         String?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  locationId          Int?                 @unique
-  location            Location?            @relation(fields: [locationId], references: [id])
+  locationId          Int                  @unique
+  location            Location             @relation(fields: [locationId], references: [id])
   columns             Column[]
   memberships         Membership[]
   membershipPositions MembershipPosition[]
@@ -31,14 +30,13 @@ model Church {
 }
 
 model Column {
-  id                  Int                  @id @default(autoincrement())
-  name                String
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  churchId            Int
-  church              Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
-  memberships         Membership[]
-  membershipPositions MembershipPosition[]
+  id          Int          @id @default(autoincrement())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  churchId    Int?
+  church      Church?      @relation(fields: [churchId], references: [id], onDelete: SetNull)
+  memberships Membership[]
 
   @@unique([churchId, name])
 }
@@ -50,41 +48,48 @@ model Membership {
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   accountId            Int                  @unique
-  columnId             Int
-  churchId             Int
+  columnId             Int?
+  churchId             Int?
   supervisorActivities Activity[]           @relation("SupervisorActivities")
   approvers            Approver[]
   account              Account              @relation(fields: [accountId], references: [id])
-  church               Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
-  column               Column               @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  church               Church?              @relation(fields: [churchId], references: [id], onDelete: SetNull)
+  column               Column?              @relation(fields: [columnId], references: [id], onDelete: SetNull)
   membershipPositions  MembershipPosition[]
 
   @@index([churchId, columnId])
 }
 
 model MembershipPosition {
-  id           Int        @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   name         String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  membershipId Int
-  membership   Membership @relation(fields: [membershipId], references: [id])
-  churchId     Int
-  church       Church     @relation(fields: [churchId], references: [id])
-  columnId     Int
-  column       Column     @relation(fields: [columnId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  membershipId Int?
+  membership   Membership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  churchId     Int?
+  church       Church?     @relation(fields: [churchId], references: [id], onDelete: SetNull)
 }
 
 model Account {
-  id         Int         @id @default(autoincrement())
-  name       String
-  phone      String      @unique
-  gender     Gender
-  married    Boolean
-  dob        DateTime
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  membership Membership?
+  id                    Int         @id @default(autoincrement())
+  name                  String
+  phone                 String      @unique
+  email                 String?     @unique
+  passwordHash          String?
+  isActive              Boolean     @default(true)
+  claimed               Boolean     @default(false)
+  failedLoginAttempts   Int         @default(0)
+  lockUntil             DateTime?
+  refreshTokenHash      String?
+  refreshTokenExpiresAt DateTime?
+  refreshTokenJti       String?
+  gender                Gender
+  married               Boolean
+  dob                   DateTime
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  membership            Membership?
 }
 
 model Activity {
@@ -116,8 +121,8 @@ model Activity {
 model Location {
   id         Int        @id @default(autoincrement())
   name       String
-  latitude   Decimal    @db.Decimal(9, 6)
-  longitude  Decimal    @db.Decimal(9, 6)
+  latitude   Float
+  longitude  Float
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   activities Activity[]
