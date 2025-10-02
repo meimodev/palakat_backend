@@ -16,6 +16,8 @@ import {
 import { AccountService } from './account.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
+import { AccountListQueryDto } from './dto/account-list.dto';
+import { AccountCountQueryDto } from './dto/account-count.dto';
 
 @Controller('account')
 @UseGuards(AuthGuard('jwt'))
@@ -23,8 +25,13 @@ export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Get()
-  async getAccount(@Query() query: Prisma.AccountWhereUniqueInput) {
-    return this.accountService.getAccount(query);
+  async findAll(@Query() query: AccountListQueryDto) {
+    return this.accountService.findAll(query);
+  }
+
+  @Get('count')
+  async count(@Query() query: AccountCountQueryDto) {
+    return this.accountService.count(query);
   }
 
   @Post()

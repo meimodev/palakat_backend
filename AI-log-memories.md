@@ -1,3 +1,11 @@
+2025-09-30 - GPT-5
+
+- Noted service pagination pattern: use `$transaction([count, findMany])` and return `{ data, total }`. Applied to `AccountService.findAll` with optional `churchId` filter.
+  - Also note: sanitize responses by selecting non-sensitive account fields by default in listings.
+  - Tiered search strategy for account listing: try direct `Account.name`, fallback to `Membership.column.name`, then `Membership.membershipPositions.name`.
+  - When `search` is present, append the matched source to the response message (`OK - <source>`).
+  - Account listing supports optional `position` filter (case-insensitive match on `MembershipPosition.name`).
+
 2025-09-25 - Noted: On FK issues for `Membership.columnId`, add service-level guards and validations; keep seed data consistent with Prisma models. Updated code accordingly.
 
 2025-09-25 - Noted: `Membership.churchId` and relation can be nullable; services derive `churchId` from `columnId` when absent. Migrations set FK to ON DELETE SET NULL.
@@ -89,3 +97,12 @@
 
 - Updated `MembershipPositionService.findOne` to be null-safe when `membership` is missing
 - Continued per-prompt logging in `AI-log.md`
+
+2025-09-29 - Per-prompt maintenance
+2025-10-01 - GPT-5
+
+- Logged pattern: lightweight count endpoints should accept optional filters and use `PrismaService.account.count` with a minimal `where` shape to keep them fast.
+- For counts by church, rely on `membership.churchId` relation filter.
+
+- Reviewed seed and package files to suggest performance and maintainability optimizations
+- No memory policy change
