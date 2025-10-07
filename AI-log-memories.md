@@ -106,3 +106,7 @@
 
 - Reviewed seed and package files to suggest performance and maintainability optimizations
 - No memory policy change
+
+2025-10-02 - GPT-5
+
+- Per user request, updated seeding to create 20 accounts with memberships under a single church. Memory policy unchanged. Continuing per-prompt logging to `AI-log.md` and maintaining this file.

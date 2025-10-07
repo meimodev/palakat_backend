@@ -1,0 +1,173 @@
+/**
+ * Recursively strips specified keys from an object or array.
+ * @param data - The object or array to process
+ * @param keysToStrip - Array of key names to remove (default: ['id', 'updatedAt'])
+ * @param parentKey - Internal parameter to track parent key (used to skip stripping in 'set' contexts)
+ * @returns A new object/array with specified keys removed
+ */
+export function stripKeys<T = any>(
+  data: T,
+  keysToStrip: string[] = ['id', 'updatedAt'],
+  parentKey?: string,
+): T {
+  // Handle null or undefined
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // Handle arrays
+  if (Array.isArray(data)) {
+    return data.map((item) => stripKeys(item, keysToStrip, parentKey)) as T;
+  }
+
+  // Handle objects
+  if (typeof data === 'object' && data !== null) {
+    const result: any = {};
+
+    for (const [key, value] of Object.entries(data)) {
+      // Skip keys that should be stripped, UNLESS parent key is 'set'
+      // This preserves { set: [{ id: 1 }, { id: 2 }] } in Prisma relations
+      if (keysToStrip.includes(key) && parentKey !== 'set') {
+        continue;
+      }
+
+      // Recursively process nested objects and arrays, passing current key as parent
+      result[key] = stripKeys(value, keysToStrip, key);
+    }
+
+    return result as T;
+  }
+
+  // Return primitive values as-is
+  return data;
+}
+
+/**
+ * Recursively transforms object fields with 'id' into simplified ID references.
+ * - Single objects: { column: { id: 1, name: "..." } } -> { columnId: 1 }
+ * - Arrays of objects: { positions: [{ id: 1 }, { id: 2 }] } -> { positionIds: [1, 2] }
+ * Processes nested objects and arrays deeply.
+ * @param data - The object or array to process
+ * @param fieldsToTransform - Array of field names to transform (default: ['membershipPositions'])
+ * @returns A new object/array with specified fields transformed to ID references
+ */
+export function transformToIdArrays<T = any>(
+  data: T,
+  fieldsToTransform: string[] = ['membershipPositions'],
+): T {
+  // Handle null or undefined
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // Handle arrays - recursively process each item
+  if (Array.isArray(data)) {
+    return data.map((item) => transformToIdArrays(item, fieldsToTransform)) as T;
+  }
+
+  // Handle objects
+  if (typeof data === 'object' && data !== null) {
+    const result: any = {};
+
+    for (const [key, value] of Object.entries(data)) {
+      // Check if this field should be transformed
+      if (fieldsToTransform.includes(key)) {
+        // Handle array of objects -> transform to array of IDs
+        if (Array.isArray(value)) {
+          const ids = value
+            .map((item) => {
+              if (typeof item === 'object' && item !== null && 'id' in item) {
+                return item.id;
+              }
+              return item;
+            })
+            .filter((id) => id !== undefined && id !== null);
+          
+          // Use plural form: fieldName -> fieldNameIds
+          const newKey = key.endsWith('s') ? `${key.slice(0, -1)}Ids` : `${key}Ids`;
+          result[newKey] = ids;
+        }
+        // Handle single object -> transform to single ID
+        else if (typeof value === 'object' && value !== null && 'id' in value) {
+          // Use singular form: fieldName -> fieldNameId
+          const newKey = `${key}Id`;
+          result[newKey] = value.id;
+        }
+        // If value doesn't have an id, keep as-is
+        else {
+          result[key] = transformToIdArrays(value, fieldsToTransform);
+        }
+      } else {
+        // Recursively process nested values
+        result[key] = transformToIdArrays(value, fieldsToTransform);
+      }
+    }
+
+    return result as T;
+  }
+
+  // Return primitive values as-is
+  return data;
+}
+
+/**
+ * Transforms arrays of objects with 'id' into Prisma 'set' format for relation updates.
+ * Example: [{ id: 1, name: "..." }, { id: 2, ... }] -> { set: [{ id: 1 }, { id: 2 }] }
+ * @param data - The object or array to process
+ * @param fieldsToTransform - Array of field names to transform (default: ['membershipPositions'])
+ * @returns A new object with specified fields transformed to Prisma set format
+ */
+export function transformToSetFormat<T = any>(
+  data: T,
+  fieldsToTransform: string[] = ['membershipPositions'],
+): T {
+  // Handle null or undefined
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // Handle arrays - recursively process each item
+  if (Array.isArray(data)) {
+    return data.map((item) => transformToSetFormat(item, fieldsToTransform)) as T;
+  }
+
+  // Handle objects
+  if (typeof data === 'object' && data !== null) {
+    const result: any = {};
+
+    for (const [key, value] of Object.entries(data)) {
+      // Check if this field should be transformed
+      if (fieldsToTransform.includes(key)) {
+        // Handle array of objects -> transform to { set: [{ id: ... }] }
+        if (Array.isArray(value)) {
+          const setArray = value
+            .map((item) => {
+              if (typeof item === 'object' && item !== null && 'id' in item) {
+                return { id: item.id };
+              }
+              return null;
+            })
+            .filter((item) => item !== null);
+          
+          result[key] = { set: setArray };
+        }
+        // Handle single object -> keep as-is or transform if needed
+        else if (typeof value === 'object' && value !== null && 'id' in value) {
+          result[key] = { id: value.id };
+        }
+        // If value doesn't have an id, keep as-is
+        else {
+          result[key] = transformToSetFormat(value, fieldsToTransform);
+        }
+      } else {
+        // Recursively process nested values
+        result[key] = transformToSetFormat(value, fieldsToTransform);
+      }
+    }
+
+    return result as T;
+  }
+
+  // Return primitive values as-is
+  return data;
+}

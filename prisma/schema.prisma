@@ -85,7 +85,7 @@ model Account {
   refreshTokenExpiresAt DateTime?
   refreshTokenJti       String?
   gender                Gender
-  married               Boolean
+  maritalStatus         MaritalStatus
   dob                   DateTime
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
@@ -145,11 +145,6 @@ model Approver {
   @@index([status])
 }
 
-enum ApprovalStatus {
-  UNCONFIRMED
-  APPROVED
-  REJECTED
-}
 
 model Song {
   id        Int        @id @default(autoincrement())
@@ -198,4 +193,15 @@ enum Book {
   NNBT
   KJ
   DSL
+}
+
+enum ApprovalStatus {
+  UNCONFIRMED
+  APPROVED
+  REJECTED
+}
+
+enum MaritalStatus {
+  MARRIED
+  SINGLE
 }

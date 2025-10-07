@@ -15,28 +15,41 @@ import {
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { Prisma } from '@prisma/client';
+import { CreateAccountDto } from './dto/create-account.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AccountListQueryDto } from './dto/account-list.dto';
 import { AccountCountQueryDto } from './dto/account-count.dto';
+import { stripKeys, transformToIdArrays, transformToSetFormat } from 'src/utils';
 
 @Controller('account')
 @UseGuards(AuthGuard('jwt'))
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Get()
-  async findAll(@Query() query: AccountListQueryDto) {
-    return this.accountService.findAll(query);
-  }
-
   @Get('count')
   async count(@Query() query: AccountCountQueryDto) {
     return this.accountService.count(query);
   }
 
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.accountService.findOne(id);
+  }
+
+  @Get()
+  async findAll(@Query() query: AccountListQueryDto) {
+    return this.accountService.findAll(query);
+  }
+
   @Post()
-  create(@Body() createAccountDto: Prisma.AccountCreateInput) {
-    return this.accountService.create(createAccountDto);
+  create(@Body() createAccountDto: CreateAccountDto) {
+    const { membership, dob, ...rest } = createAccountDto as any;
+    const payload: Prisma.AccountCreateInput = {
+      ...rest,
+      dob: new Date(dob),
+      ...(membership ? { membership } : {}),
+    } as any;
+    return this.accountService.create(payload);
   }
 
   @Patch(':id')
@@ -44,7 +57,16 @@ export class AccountController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateAccountDto: Prisma.AccountUpdateInput,
   ) {
-    return this.accountService.update(id, updateAccountDto);
+    
+    const transformed = transformToIdArrays(updateAccountDto , ['column', 'church']);
+    const prismaSet = transformToSetFormat(transformed, ['membershipPositions'])
+    const cleaned = stripKeys(prismaSet, ['id', 'updatedAt', 'createdAt']);
+  
+    if (cleaned.dob && !cleaned.dob.toString().endsWith('Z')) {
+      cleaned.dob = new Date(cleaned.dob.toString() + 'Z');
+    }
+
+    return this.accountService.update(id, cleaned);
   }
 
   @Delete(':id')

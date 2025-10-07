@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { PrismaClient, Gender } from '@prisma/client';
+import { PrismaClient, Gender, MaritalStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 describe('Auth (e2e)', () => {
@@ -40,7 +40,7 @@ describe('Auth (e2e)', () => {
         email: 'e2e_user1@example.com',
         passwordHash,
         gender: Gender.MALE,
-        married: false,
+        maritalStatus: MaritalStatus.SINGLE,
         dob: new Date('1990-01-01'),
         isActive: true,
       } as any,
@@ -59,7 +59,7 @@ describe('Auth (e2e)', () => {
         email: 'e2e_user2@example.com',
         passwordHash,
         gender: Gender.FEMALE,
-        married: true,
+        maritalStatus: MaritalStatus.MARRIED,
         dob: new Date('1992-02-02'),
         isActive: true,
       } as any,

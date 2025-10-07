@@ -13,6 +13,11 @@
 - Created `AccountCountQueryDto` with optional numeric `churchId`.
 - Lints passing on changed files.
 
+2025-10-02 - GPT-5
+
+- Seeded 20 additional `Account` records and created `Membership` for each, all linked to the first created `Church` and its columns.
+- Updated seed summary counts accordingly.
+
 2025-09-25 - GPT-5
 
 - Added guard to prevent deleting `Column` with memberships in `src/column/column.service.ts`.

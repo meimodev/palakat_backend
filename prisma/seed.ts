@@ -4,6 +4,7 @@ import {
   Bipra,
   ActivityType,
   Book,
+  MaritalStatus,
 } from '@prisma/client';
 import * as process from 'node:process';
 import * as bcrypt from 'bcryptjs';
@@ -65,7 +66,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.MALE,
-        married: true,
+        maritalStatus: MaritalStatus.MARRIED,
         dob: new Date('1990-01-01'),
       } as any,
     }),
@@ -77,7 +78,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.FEMALE,
-        married: false,
+        maritalStatus: MaritalStatus.SINGLE,
         dob: new Date('1980-01-01'),
       } as any,
     }),
@@ -88,7 +89,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.MALE,
-        married: true,
+        maritalStatus: MaritalStatus.MARRIED,
         dob: new Date('1960-01-01'),
       } as any,
     }),
@@ -99,7 +100,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.FEMALE,
-        married: true,
+        maritalStatus: MaritalStatus.MARRIED,
         dob: new Date('1997-01-01'),
       } as any,
     }),
@@ -110,7 +111,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.MALE,
-        married: false,
+        maritalStatus: MaritalStatus.SINGLE,
         dob: new Date('2000-01-01'),
       } as any,
     }),
@@ -122,7 +123,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.FEMALE,
-        married: true,
+        maritalStatus: MaritalStatus.MARRIED,
         dob: new Date('2000-01-01'),
       } as any,
     }),
@@ -133,7 +134,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.MALE,
-        married: false,
+        maritalStatus: MaritalStatus.SINGLE,
         dob: new Date('2000-01-01'),
       } as any,
     }),
@@ -144,7 +145,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.FEMALE,
-        married: true,
+        maritalStatus: MaritalStatus.MARRIED,
         dob: new Date('2000-01-01'),
       } as any,
     }),
@@ -155,7 +156,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.MALE,
-        married: false,
+        maritalStatus: MaritalStatus.SINGLE,
         dob: new Date('2000-01-01'),
       } as any,
     }),
@@ -166,7 +167,7 @@ async function main() {
         passwordHash: defaultPasswordHash,
         claimed: false,
         gender: Gender.FEMALE,
-        married: false,
+        maritalStatus: MaritalStatus.SINGLE,
         dob: new Date('2000-01-01'),
       } as any,
     }),
@@ -480,6 +481,53 @@ async function main() {
   ]);
 
   console.log(`✅ Created ${membershipPositions.length} membership positions`);
+
+  // 3.b Create 20 additional accounts with memberships all in the first church
+  const extraAccounts = await Promise.all(
+    Array.from({ length: 20 }).map((_, idx) =>
+      prisma.account.create({
+        data: {
+          name: `Seed User ${idx + 1}`,
+          phone: generateNumericPhoneNumber(),
+          passwordHash: defaultPasswordHash,
+          claimed: false,
+          gender: Math.random() < 0.5 ? Gender.MALE : Gender.FEMALE,
+          maritalStatus: Math.random() < 0.5 ? MaritalStatus.MARRIED : MaritalStatus.SINGLE,
+          dob: new Date(
+            1980 + Math.floor(Math.random() * 25),
+            Math.floor(Math.random() * 12),
+            1 + Math.floor(Math.random() * 28),
+          ),
+        } as any,
+      }),
+    ),
+  );
+
+  // Attach memberships for the 20 extra accounts to church id 1 (first created church)
+  const extraMemberships = await Promise.all(
+    extraAccounts.map((acc, idx) => {
+      const firstChurch = churches[0];
+      const targetColumn =
+        firstChurch.columns[idx % firstChurch.columns.length];
+      return prisma.membership.create({
+        data: {
+          accountId: acc.id,
+          churchId: firstChurch.id,
+          columnId: targetColumn.id,
+          baptize: Math.random() < 0.7,
+          sidi: Math.random() < 0.6,
+        },
+      });
+    }),
+  );
+
+  // Merge into existing arrays for accurate summary
+  accounts.push(...extraAccounts);
+  memberships.push(...extraMemberships);
+
+  console.log(
+    `✅ Created ${extraAccounts.length} additional accounts with memberships in church ID ${churches[0].id}`,
+  );
 
   // 4. Create Activities (supervisor is the creator/owner; approver optional)
   const activities = await Promise.all([
