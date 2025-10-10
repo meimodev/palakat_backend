@@ -43,12 +43,20 @@ export class AccountController {
 
   @Post()
   create(@Body() createAccountDto: CreateAccountDto) {
-    const { membership, dob, ...rest } = createAccountDto as any;
-    const payload: Prisma.AccountCreateInput = {
+    
+    const { membership, ...rest } = createAccountDto as any;
+    const data: Prisma.AccountCreateInput = {
       ...rest,
-      dob: new Date(dob),
       ...(membership ? { membership } : {}),
     } as any;
+
+    if (data.dob && !data.dob.toString().endsWith('Z')) {
+      data.dob = data.dob.toString() + 'Z';
+    }
+
+    const payload = transformToIdArrays(data , ['church','column','membershipPositions' ]);
+
+
     return this.accountService.create(payload);
   }
 

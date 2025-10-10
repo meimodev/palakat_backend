@@ -74,26 +74,28 @@ export function transformToIdArrays<T = any>(
       if (fieldsToTransform.includes(key)) {
         // Handle array of objects -> transform to array of IDs
         if (Array.isArray(value)) {
-          const ids = value
-            .map((item) => {
-              if (typeof item === 'object' && item !== null && 'id' in item) {
-                return item.id;
-              }
-              return item;
-            })
-            .filter((id) => id !== undefined && id !== null);
+          // Check if all items in array are objects with numeric id property
+          const allHaveNumericIds = value.length > 0 && value.every(
+            (item) => typeof item === 'object' && item !== null && 'id' in item && typeof item.id === 'number'
+          );
           
-          // Use plural form: fieldName -> fieldNameIds
-          const newKey = key.endsWith('s') ? `${key.slice(0, -1)}Ids` : `${key}Ids`;
-          result[newKey] = ids;
+          if (allHaveNumericIds) {
+            const ids = value.map((item) => item.id);
+            // Use plural form: fieldName -> fieldNameIds
+            const newKey = key.endsWith('s') ? `${key.slice(0, -1)}Ids` : `${key}Ids`;
+            result[newKey] = ids;
+          } else {
+            // Keep original if not all items have numeric IDs
+            result[key] = transformToIdArrays(value, fieldsToTransform);
+          }
         }
         // Handle single object -> transform to single ID
-        else if (typeof value === 'object' && value !== null && 'id' in value) {
+        else if (typeof value === 'object' && value !== null && 'id' in value && typeof value.id === 'number') {
           // Use singular form: fieldName -> fieldNameId
           const newKey = `${key}Id`;
           result[newKey] = value.id;
         }
-        // If value doesn't have an id, keep as-is
+        // If value doesn't have a numeric id, keep as-is and recurse
         else {
           result[key] = transformToIdArrays(value, fieldsToTransform);
         }

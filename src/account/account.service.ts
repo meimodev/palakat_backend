@@ -342,50 +342,15 @@ export class AccountService {
 
     const account = await this.prisma.account.create({
       data,
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        isActive: true,
-        claimed: true,
-        failedLoginAttempts: true,
-        lockUntil: true,
-        gender: true,
-        maritalStatus: true,
-        dob: true,
-        createdAt: true,
-        updatedAt: true,
-        membership: {
-          select: {
-            id: true,
-            churchId: true,
-            columnId: true,
-            baptize: true,
-            sidi: true,
-            createdAt: true,
-            updatedAt: true,
-            column: {
-              select: {
-                id: true,
-                name: true,
-                churchId: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-            membershipPositions: {
-              select: {
-                id: true,
-                name: true,
-                churchId: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
+        include: {
+          membership: {
+            include: {
+              church: true,
+              column: true,
+              membershipPositions: true,
+            }
           },
         },
-      },
     });
     if (account) {
       return {

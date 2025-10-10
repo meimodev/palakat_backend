@@ -74,10 +74,10 @@ class CreateMembershipDto {
   @Type(() => CreateMembershipPositionCreateDto)
   membershipPositionsCreate?: CreateMembershipPositionCreateDto[];
 
-  // Direct prisma object for power users
+  // Direct prisma object for power users - array of position objects with id
   @IsOptional()
-  @IsObject()
-  membershipPositions?: any;
+  @IsArray()
+  membershipPositions?: any[];
 }
 
 export class CreateAccountDto {
@@ -101,7 +101,7 @@ export class CreateAccountDto {
   maritalStatus!: MaritalStatus;
 
   @IsDateString()
-  dob!: string; // ISO date string; service will accept as Date
+  dob?: string; // ISO date string; service will accept as Date
 
   @IsOptional()
   @ValidateNested()
