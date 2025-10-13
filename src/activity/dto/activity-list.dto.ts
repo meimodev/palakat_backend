@@ -1,7 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Min, ValidateIf } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination.dto';
 import { BadRequestException } from '@nestjs/common';
+import { ActivityType } from '@prisma/client';
 
 export class ActivityListQueryDto extends PaginationQueryDto {
   @IsOptional()
@@ -24,20 +25,28 @@ export class ActivityListQueryDto extends PaginationQueryDto {
 
   @IsOptional()
   @Type(() => Date)
-  startTimestamp?: Date;
+  startDate?: Date;
 
   @IsOptional()
   @Type(() => Date)
-  endTimestamp?: Date;
+  endDate?: Date;
+
+  @IsOptional()
+  @IsEnum(ActivityType)
+  activityType?: ActivityType;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 
   @ValidateIf((o) => {
     if (
-      o.startTimestamp &&
-      o.endTimestamp &&
-      o.startTimestamp > o.endTimestamp
+      o.startDate &&
+      o.endDate &&
+      o.startDate > o.endDate
     ) {
       throw new BadRequestException(
-        'startTimestamp must be before or equal to endTimestamp',
+        'startDate must be before or equal to endDate',
       );
     }
     return false;

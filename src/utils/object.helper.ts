@@ -62,7 +62,9 @@ export function transformToIdArrays<T = any>(
 
   // Handle arrays - recursively process each item
   if (Array.isArray(data)) {
-    return data.map((item) => transformToIdArrays(item, fieldsToTransform)) as T;
+    return data.map((item) =>
+      transformToIdArrays(item, fieldsToTransform),
+    ) as T;
   }
 
   // Handle objects
@@ -75,14 +77,22 @@ export function transformToIdArrays<T = any>(
         // Handle array of objects -> transform to array of IDs
         if (Array.isArray(value)) {
           // Check if all items in array are objects with numeric id property
-          const allHaveNumericIds = value.length > 0 && value.every(
-            (item) => typeof item === 'object' && item !== null && 'id' in item && typeof item.id === 'number'
-          );
-          
+          const allHaveNumericIds =
+            value.length > 0 &&
+            value.every(
+              (item) =>
+                typeof item === 'object' &&
+                item !== null &&
+                'id' in item &&
+                typeof item.id === 'number',
+            );
+
           if (allHaveNumericIds) {
             const ids = value.map((item) => item.id);
             // Use plural form: fieldName -> fieldNameIds
-            const newKey = key.endsWith('s') ? `${key.slice(0, -1)}Ids` : `${key}Ids`;
+            const newKey = key.endsWith('s')
+              ? `${key.slice(0, -1)}Ids`
+              : `${key}Ids`;
             result[newKey] = ids;
           } else {
             // Keep original if not all items have numeric IDs
@@ -90,7 +100,12 @@ export function transformToIdArrays<T = any>(
           }
         }
         // Handle single object -> transform to single ID
-        else if (typeof value === 'object' && value !== null && 'id' in value && typeof value.id === 'number') {
+        else if (
+          typeof value === 'object' &&
+          value !== null &&
+          'id' in value &&
+          typeof value.id === 'number'
+        ) {
           // Use singular form: fieldName -> fieldNameId
           const newKey = `${key}Id`;
           result[newKey] = value.id;
@@ -130,7 +145,9 @@ export function transformToSetFormat<T = any>(
 
   // Handle arrays - recursively process each item
   if (Array.isArray(data)) {
-    return data.map((item) => transformToSetFormat(item, fieldsToTransform)) as T;
+    return data.map((item) =>
+      transformToSetFormat(item, fieldsToTransform),
+    ) as T;
   }
 
   // Handle objects
@@ -150,7 +167,7 @@ export function transformToSetFormat<T = any>(
               return null;
             })
             .filter((item) => item !== null);
-          
+
           result[key] = { set: setArray };
         }
         // Handle single object -> keep as-is or transform if needed

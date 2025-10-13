@@ -19,7 +19,11 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AccountListQueryDto } from './dto/account-list.dto';
 import { AccountCountQueryDto } from './dto/account-count.dto';
-import { stripKeys, transformToIdArrays, transformToSetFormat } from 'src/utils';
+import {
+  stripKeys,
+  transformToIdArrays,
+  transformToSetFormat,
+} from 'src/utils';
 
 @Controller('account')
 @UseGuards(AuthGuard('jwt'))
@@ -43,7 +47,6 @@ export class AccountController {
 
   @Post()
   create(@Body() createAccountDto: CreateAccountDto) {
-    
     const { membership, ...rest } = createAccountDto as any;
     const data: Prisma.AccountCreateInput = {
       ...rest,
@@ -54,8 +57,11 @@ export class AccountController {
       data.dob = data.dob.toString() + 'Z';
     }
 
-    const payload = transformToIdArrays(data , ['church','column','membershipPositions' ]);
-
+    const payload = transformToIdArrays(data, [
+      'church',
+      'column',
+      'membershipPositions',
+    ]);
 
     return this.accountService.create(payload);
   }
@@ -65,11 +71,15 @@ export class AccountController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateAccountDto: Prisma.AccountUpdateInput,
   ) {
-    
-    const transformed = transformToIdArrays(updateAccountDto , ['column', 'church']);
-    const prismaSet = transformToSetFormat(transformed, ['membershipPositions'])
+    const transformed = transformToIdArrays(updateAccountDto, [
+      'column',
+      'church',
+    ]);
+    const prismaSet = transformToSetFormat(transformed, [
+      'membershipPositions',
+    ]);
     const cleaned = stripKeys(prismaSet, ['id', 'updatedAt', 'createdAt']);
-  
+
     if (cleaned.dob && !cleaned.dob.toString().endsWith('Z')) {
       cleaned.dob = new Date(cleaned.dob.toString() + 'Z');
     }

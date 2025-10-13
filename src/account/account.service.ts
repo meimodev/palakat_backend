@@ -207,12 +207,10 @@ export class AccountService {
       },
     });
 
-      return {
-        message: 'OK',
-        data: account,
-      };
-
-   
+    return {
+      message: 'OK',
+      data: account,
+    };
   }
 
   async count(params: AccountCountQueryDto) {
@@ -221,7 +219,7 @@ export class AccountService {
     if (typeof churchId === 'number') {
       baseMembershipWhere.churchId = churchId;
     }
- 
+
     const totalWhere: Prisma.AccountWhereInput = {};
     if (Object.keys(baseMembershipWhere).length > 0) {
       (totalWhere as any).membership = baseMembershipWhere as any;
@@ -267,7 +265,8 @@ export class AccountService {
   async create(createAccountDto: Prisma.AccountCreateInput) {
     // Allow flexible payloads that may include a simplified membership object
     // and transform them into Prisma nested create/connect shapes.
-    const { membership: rawMembership, ...accountData } = (createAccountDto as any) || {};
+    const { membership: rawMembership, ...accountData } =
+      (createAccountDto as any) || {};
 
     const data: Prisma.AccountCreateInput = { ...(accountData as any) } as any;
 
@@ -277,7 +276,9 @@ export class AccountService {
       // 2) Simplified input with keys like churchId, columnId, membershipPositionIds, membershipPositionsCreate
       const isDirectPrismaShape =
         typeof rawMembership === 'object' &&
-        (rawMembership.create || rawMembership.connect || rawMembership.connectOrCreate);
+        (rawMembership.create ||
+          rawMembership.connect ||
+          rawMembership.connectOrCreate);
 
       if (isDirectPrismaShape) {
         (data as any).membership = rawMembership;
@@ -315,17 +316,23 @@ export class AccountService {
 
         // Build membershipPositions relation operations
         const mpOps: any = {};
-        if (Array.isArray(membershipPositionIds) && membershipPositionIds.length > 0) {
+        if (
+          Array.isArray(membershipPositionIds) &&
+          membershipPositionIds.length > 0
+        ) {
           mpOps.connect = membershipPositionIds.map((id: number) => ({ id }));
         }
-        if (Array.isArray(membershipPositionsCreate) && membershipPositionsCreate.length > 0) {
+        if (
+          Array.isArray(membershipPositionsCreate) &&
+          membershipPositionsCreate.length > 0
+        ) {
           mpOps.create = membershipPositionsCreate.map((p: any) => ({
             name: p.name,
             ...(p?.churchId
               ? { church: { connect: { id: p.churchId } } }
               : p?.church
-              ? { church: p.church }
-              : {}),
+                ? { church: p.church }
+                : {}),
           }));
         }
         if (membershipPositions) {
@@ -342,15 +349,15 @@ export class AccountService {
 
     const account = await this.prisma.account.create({
       data,
-        include: {
-          membership: {
-            include: {
-              church: true,
-              column: true,
-              membershipPositions: true,
-            }
+      include: {
+        membership: {
+          include: {
+            church: true,
+            column: true,
+            membershipPositions: true,
           },
         },
+      },
     });
     if (account) {
       return {
@@ -363,7 +370,8 @@ export class AccountService {
   async update(id: number, updateAccountDto: Prisma.AccountUpdateInput) {
     // Allow flexible payloads that may include a simplified membership object
     // and transform them into Prisma nested update/upsert shapes.
-    const { membership: rawMembership, ...accountData } = (updateAccountDto as any) || {};
+    const { membership: rawMembership, ...accountData } =
+      (updateAccountDto as any) || {};
 
     const data: Prisma.AccountUpdateInput = { ...(accountData as any) } as any;
 
@@ -422,21 +430,32 @@ export class AccountService {
 
         // Build membershipPositions relation operations
         const mpOps: any = {};
-        if (Array.isArray(membershipPositionIds) && membershipPositionIds.length > 0) {
+        if (
+          Array.isArray(membershipPositionIds) &&
+          membershipPositionIds.length > 0
+        ) {
           mpOps.connect = membershipPositionIds.map((id: number) => ({ id }));
         }
-        if (Array.isArray(membershipPositionsCreate) && membershipPositionsCreate.length > 0) {
+        if (
+          Array.isArray(membershipPositionsCreate) &&
+          membershipPositionsCreate.length > 0
+        ) {
           mpOps.create = membershipPositionsCreate.map((p: any) => ({
             name: p.name,
             ...(p?.churchId
               ? { church: { connect: { id: p.churchId } } }
               : p?.church
-              ? { church: p.church }
-              : {}),
+                ? { church: p.church }
+                : {}),
           }));
         }
-        if (Array.isArray(membershipPositionsDisconnect) && membershipPositionsDisconnect.length > 0) {
-          mpOps.disconnect = membershipPositionsDisconnect.map((id: number) => ({ id }));
+        if (
+          Array.isArray(membershipPositionsDisconnect) &&
+          membershipPositionsDisconnect.length > 0
+        ) {
+          mpOps.disconnect = membershipPositionsDisconnect.map(
+            (id: number) => ({ id }),
+          );
         }
         if (membershipPositions) {
           // allow direct prisma operations for membershipPositions
@@ -490,16 +509,16 @@ export class AccountService {
       await tx.membership.deleteMany({
         where: { accountId: id },
       });
-      
+
       // Then delete the account
       await tx.account.delete({
         where: { id: id },
       });
     });
-    
+
     return {
       message: 'OK',
-      data:{},
+      data: {},
     };
   }
 }

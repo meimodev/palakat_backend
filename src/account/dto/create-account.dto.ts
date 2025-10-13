@@ -106,9 +106,11 @@ export class CreateAccountDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CreateMembershipDto)
-  membership?: CreateMembershipDto | {
-    create?: any;
-    connect?: any;
-    connectOrCreate?: any;
-  };
+  membership?:
+    | CreateMembershipDto
+    | {
+        create?: any;
+        connect?: any;
+        connectOrCreate?: any;
+      };
 }

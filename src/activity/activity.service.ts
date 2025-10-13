@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { ActivityListQueryDto } from './dto/activity-list.dto';
+import { MaritalStatus } from '@prisma/client';
 
 @Injectable()
 export class ActivitiesService {
@@ -11,8 +12,10 @@ export class ActivitiesService {
       membershipId,
       churchId,
       columnId,
-      startTimestamp,
-      endTimestamp,
+      startDate,
+      endDate,
+      activityType,
+      search,
       skip,
       take,
     } = query;
@@ -25,14 +28,25 @@ export class ActivitiesService {
       },
     };
 
-    if (startTimestamp || endTimestamp) {
-      where.date = {};
-      if (startTimestamp) {
-        where.date.gte = startTimestamp;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = startDate;
       }
-      if (endTimestamp) {
-        where.date.lte = endTimestamp;
+      if (endDate) {
+        where.createdAt.lte = endDate;
       }
+    }
+
+    if (activityType) {
+      where.activityType = activityType;
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
     const [total, activities] = await (this.prisma as any).$transaction([
@@ -41,23 +55,64 @@ export class ActivitiesService {
         where,
         take,
         skip,
-        orderBy: { date: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          date: true,
-          activityType: true,
-          supervisorId: true,
-          supervisor: true,
-          location: true,
-          _count: { select: { approvers: true } },
+        orderBy: { createdAt: 'desc' },
+      
+        include: {
+          supervisor: {
+            select: {
+              account: {
+                select: {
+                  name: true,
+                  phone: true,
+                  dob: true,
+                },
+              },
+            
+            },
+          },
+          approvers: {
+            select: {
+              id: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+              membership: {
+                select: {
+                  account: {
+                    select: {
+                      id: true,
+                      name: true,
+                      phone: true,
+                      dob: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       }),
     ]);
 
+    // Track which fields matched the search
+    let searchInfo = '';
+    if (search && activities.length > 0) {
+      const matchedFields = new Set<string>();
+      activities.forEach((activity: any) => {
+        if (activity.title?.toLowerCase().includes(search.toLowerCase())) {
+          matchedFields.add('title');
+        }
+        if (activity.description?.toLowerCase().includes(search.toLowerCase())) {
+          matchedFields.add('description');
+        }
+      });
+      if (matchedFields.size > 0) {
+        searchInfo = ` (matched in: ${Array.from(matchedFields).join(', ')})`;
+      }
+    }
+
     return {
-      message: 'Activities retrieved successfully',
+      message: `Activities retrieved successfully${searchInfo}`,
       data: activities,
       total,
     };
@@ -67,8 +122,37 @@ export class ActivitiesService {
     const activity = await (this.prisma as any).activity.findUniqueOrThrow({
       where: { id },
       include: {
-        supervisor: true,
+        supervisor: {
+          include: {
+            membershipPositions: true,
+            account: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+                dob: true,
+              },
+            },
+          },
+        },
         location: true,
+        approvers: {
+          include: {
+            membership: {
+              include: {
+                membershipPositions: true,
+                account: {
+                  select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    dob: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     return {
