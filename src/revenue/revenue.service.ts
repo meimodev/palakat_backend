@@ -7,14 +7,31 @@ export class RevenueService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: RevenueListQueryDto) {
-    const { churchId, search, skip, take } = query;
+    const { churchId, search, paymentMethod, startDate, endDate, skip, take } = query;
 
     const where: any = {
       churchId: churchId,
     };
 
     if (search) {
-      where.OR = [{ accountNumber: { contains: search, mode: 'insensitive' } }];
+      where.OR = [
+        { accountNumber: { contains: search, mode: 'insensitive' } },
+        { activity: { title: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    if (paymentMethod) {
+      where.paymentMethod = paymentMethod;
+    }
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(endDate);
+      }
     }
 
     const [total, revenues] = await (this.prisma as any).$transaction([
@@ -44,6 +61,11 @@ export class RevenueService {
           revenue.accountNumber?.toLowerCase().includes(search.toLowerCase())
         ) {
           matchedFields.add('accountNumber');
+        }
+        if (
+          revenue.activity?.title?.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matchedFields.add('activity.title');
         }
       });
       if (matchedFields.size > 0) {
