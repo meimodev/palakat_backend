@@ -14,6 +14,8 @@ import { SongPartModule } from './song-part/song-part.module';
 import { ColumnModule } from './column/column.module';
 import { MembershipPositionModule } from './membership-position/membership-position.module';
 import { LocationModule } from './location/location.module';
+import { RevenueModule } from './revenue/revenue.module';
+import { ExpenseModule } from './expense/expense.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { LocationModule } from './location/location.module';
     SongPartModule,
     MembershipPositionModule,
     LocationModule,
+    RevenueModule,
+    ExpenseModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],

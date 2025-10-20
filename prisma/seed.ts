@@ -6,11 +6,25 @@ import {
   Book,
   MaritalStatus,
   ApprovalStatus,
+  PaymentMethod,
 } from '@prisma/client';
 import * as process from 'node:process';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// ============================================================================
+// SEEDED RANDOM NUMBER GENERATOR
+// ============================================================================
+// Using mulberry32 algorithm for deterministic random numbers
+let seed = 12345; // Fixed seed for consistent results
+
+function seededRandom(): number {
+  seed = (seed + 0x6D2B79F5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
 
 // ============================================================================
 // CONFIGURATION
@@ -19,7 +33,7 @@ const CONFIG = {
   churches: 10, // Minimal for variety coverage (6 column types)
   accountsPerChurch: 3,
   extraAccountsWithoutMembership: 5,
-  activitiesPerChurch: 2,
+  activitiesPerChurch: 5, // At least 2 for revenue, 2 for expense, 1 extra for variation
   songsPerBook: 3,
   maxApproversPerActivity: 2,
   defaultPassword: 'password',
@@ -30,34 +44,34 @@ const CONFIG = {
 // ============================================================================
 
 function generateNumericPhoneNumber(): string {
-  const length = Math.random() < 0.5 ? 12 : 13;
+  const length = seededRandom() < 0.5 ? 12 : 13;
   let result = '08'; // Always start with 08
   for (let i = 2; i < length; i++) {
-    result += Math.floor(Math.random() * 10).toString();
+    result += Math.floor(seededRandom() * 10).toString();
   }
   return result;
 }
 
 function randomElement<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
+  return array[Math.floor(seededRandom() * array.length)];
 }
 
 function randomBoolean(probability = 0.5): boolean {
-  return Math.random() < probability;
+  return seededRandom() < probability;
 }
 
 function randomDate(start: Date, end: Date): Date {
   return new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+    start.getTime() + seededRandom() * (end.getTime() - start.getTime()),
   );
 }
 
 function generateLatitude(): number {
-  return parseFloat((-6.0 - Math.random() * 0.5).toFixed(4));
+  return parseFloat((-6.0 - seededRandom() * 0.5).toFixed(4));
 }
 
 function generateLongitude(): number {
-  return parseFloat((106.5 + Math.random() * 0.5).toFixed(4));
+  return parseFloat((106.5 + seededRandom() * 0.5).toFixed(4));
 }
 
 // ============================================================================
@@ -270,7 +284,7 @@ function generateAccountData(index: number, gender?: Gender) {
     claimed: randomBoolean(0.3),
     isActive: randomBoolean(0.95),
     failedLoginAttempts: randomBoolean(0.1)
-      ? Math.floor(Math.random() * 5)
+      ? Math.floor(seededRandom() * 5)
       : 0,
     lockUntil: randomBoolean(0.05) ? new Date(Date.now() + 3600000) : null,
   };
@@ -293,7 +307,7 @@ function generateActivityData(
 ) {
   const title = randomElement(ACTIVITY_TITLES[type]);
   const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + Math.floor(Math.random() * 90));
+  futureDate.setDate(futureDate.getDate() + Math.floor(seededRandom() * 90));
 
   return {
     title: `${title} ${index}`,
@@ -304,9 +318,6 @@ function generateActivityData(
       ? `Deskripsi lengkap untuk ${title} ${index}`
       : null,
     note: randomBoolean(0.7) ? `Catatan untuk ${title} ${index}` : null,
-    fileUrl: randomBoolean(0.3)
-      ? `https://example.com/activity-${index}.pdf`
-      : null,
   };
 }
 
@@ -318,6 +329,8 @@ async function cleanDatabase() {
   console.log('🧹 Cleaning existing data...');
   await prisma.$transaction([
     prisma.approver.deleteMany(),
+    prisma.revenue.deleteMany(),
+    prisma.expense.deleteMany(),
     prisma.activity.deleteMany(),
     prisma.songPart.deleteMany(),
     prisma.song.deleteMany(),
@@ -456,7 +469,7 @@ async function seedMembershipPositions(memberships: any[]) {
   );
 
   for (const membership of membershipsWithPositions) {
-    const numPositions = Math.floor(Math.random() * 3) + 1;
+    const numPositions = Math.floor(seededRandom() * 3) + 1;
     const selectedPositions = [];
 
     for (let i = 0; i < numPositions; i++) {
@@ -553,7 +566,7 @@ async function seedApprovers(activities: any[], memberships: any[]) {
 
     // Add 0-2 approvers per activity
     const numApprovers = Math.floor(
-      Math.random() * (CONFIG.maxApproversPerActivity + 1),
+      seededRandom() * (CONFIG.maxApproversPerActivity + 1),
     );
 
     for (let i = 0; i < numApprovers && i < churchMemberships.length; i++) {
@@ -577,6 +590,120 @@ async function seedApprovers(activities: any[], memberships: any[]) {
 
   console.log(`✅ Created ${approversData.length} approvers`);
   return approversData;
+}
+
+async function seedRevenues(activities: any[], churches: any[]) {
+  console.log('💰 Creating revenues...');
+
+  const revenues = [];
+  const paymentMethods = Object.values(PaymentMethod);
+
+  // Group activities by church
+  const activitiesByChurch = new Map<number, any[]>();
+  for (const activity of activities) {
+    const supervisor = await prisma.membership.findUnique({
+      where: { id: activity.supervisorId },
+    });
+    if (supervisor && supervisor.churchId) {
+      if (!activitiesByChurch.has(supervisor.churchId)) {
+        activitiesByChurch.set(supervisor.churchId, []);
+      }
+      activitiesByChurch.get(supervisor.churchId)!.push({
+        ...activity,
+        churchId: supervisor.churchId,
+      });
+    }
+  }
+
+  // Ensure each church has exactly 2 activities with revenue
+  for (const [churchId, churchActivities] of activitiesByChurch) {
+    // Take the first 2 activities for revenue
+    const revenueActivities = churchActivities.slice(0, 2);
+
+    for (let i = 0; i < revenueActivities.length; i++) {
+      const activity = revenueActivities[i];
+      // Create variation in amounts and payment methods
+      const amountMultiplier = i === 0 ? 1 : 3; // Second revenue is typically larger
+      const baseAmount = Math.floor(seededRandom() * 3000000) + 500000; // 500k - 3.5M
+
+      const revenue = await prisma.revenue.create({
+        data: {
+          accountNumber: `${Math.floor(1000000000 + seededRandom() * 9000000000)}`,
+          amount: baseAmount * amountMultiplier,
+          churchId: activity.churchId,
+          activityId: activity.id,
+          paymentMethod: paymentMethods[i % paymentMethods.length],
+        },
+      });
+
+      revenues.push(revenue);
+    }
+  }
+
+  console.log(`✅ Created ${revenues.length} revenues`);
+  return revenues;
+}
+
+async function seedExpenses(activities: any[], churches: any[]) {
+  console.log('💸 Creating expenses...');
+
+  const expenses = [];
+  const paymentMethods = Object.values(PaymentMethod);
+
+  // Get activities that already have revenue
+  const activitiesWithRevenue = await prisma.revenue.findMany({
+    select: { activityId: true },
+  });
+  const revenueActivityIds = new Set(
+    activitiesWithRevenue.map((r) => r.activityId),
+  );
+
+  // Group activities by church (excluding those with revenue)
+  const activitiesByChurch = new Map<number, any[]>();
+  for (const activity of activities) {
+    if (revenueActivityIds.has(activity.id)) continue;
+
+    const supervisor = await prisma.membership.findUnique({
+      where: { id: activity.supervisorId },
+    });
+    if (supervisor && supervisor.churchId) {
+      if (!activitiesByChurch.has(supervisor.churchId)) {
+        activitiesByChurch.set(supervisor.churchId, []);
+      }
+      activitiesByChurch.get(supervisor.churchId)!.push({
+        ...activity,
+        churchId: supervisor.churchId,
+      });
+    }
+  }
+
+  // Ensure each church has exactly 2 activities with expense
+  for (const [churchId, churchActivities] of activitiesByChurch) {
+    // Take the first 2 activities for expense
+    const expenseActivities = churchActivities.slice(0, 2);
+
+    for (let i = 0; i < expenseActivities.length; i++) {
+      const activity = expenseActivities[i];
+      // Create variation in amounts and payment methods
+      const amountMultiplier = i === 0 ? 0.5 : 1.5; // Vary the expense amounts
+      const baseAmount = Math.floor(seededRandom() * 2000000) + 300000; // 300k - 2.3M
+
+      const expense = await prisma.expense.create({
+        data: {
+          accountNumber: `${Math.floor(1000000000 + seededRandom() * 9000000000)}`,
+          amount: Math.floor(baseAmount * amountMultiplier),
+          churchId: activity.churchId,
+          activityId: activity.id,
+          paymentMethod: paymentMethods[(i + 1) % paymentMethods.length], // Different from revenue
+        },
+      });
+
+      expenses.push(expense);
+    }
+  }
+
+  console.log(`✅ Created ${expenses.length} expenses`);
+  return expenses;
 }
 
 async function seedSongs() {
@@ -642,6 +769,8 @@ async function printSummary(
   console.log(`👤 Accounts: ${accounts.length}`);
   console.log(`🤝 Memberships: ${memberships.length}`);
   console.log(`📅 Activities: ${activities.length}`);
+  console.log(`💰 Revenues: ${await prisma.revenue.count()}`);
+  console.log(`💸 Expenses: ${await prisma.expense.count()}`);
   console.log(`🎵 Songs: ${songs.length}`);
 
   // Enum coverage
@@ -683,6 +812,18 @@ async function printSummary(
     _count: true,
   });
   console.log('Approval Status:', approverStatusCounts);
+
+  const revenuePaymentMethodCounts = await prisma.revenue.groupBy({
+    by: ['paymentMethod'],
+    _count: true,
+  });
+  console.log('Revenue Payment Method:', revenuePaymentMethodCounts);
+
+  const expensePaymentMethodCounts = await prisma.expense.groupBy({
+    by: ['paymentMethod'],
+    _count: true,
+  });
+  console.log('Expense Payment Method:', expensePaymentMethodCounts);
 
   // Accounts without membership
   const accountsWithoutMembership = await prisma.account.findMany({
@@ -731,6 +872,9 @@ async function main() {
   console.log('🌱 Starting comprehensive seed...\n');
 
   try {
+    // Reset seed for consistent results
+    seed = 12345;
+    
     // Clean database
     await cleanDatabase();
 
@@ -744,6 +888,8 @@ async function main() {
     await seedMembershipPositions(memberships);
     const activities = await seedActivities(memberships, churches);
     await seedApprovers(activities, memberships);
+    await seedRevenues(activities, churches);
+    await seedExpenses(activities, churches);
     const songs = await seedSongs();
 
     // Print summary

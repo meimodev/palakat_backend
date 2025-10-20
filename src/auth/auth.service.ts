@@ -129,17 +129,13 @@ export class AuthService {
       } as any,
     } as any);
 
-     const { passwordHash, ...filteredAccount } = account;
-        const sanitizedAccount = Object.keys(filteredAccount).reduce(
-          (acc, key) => {
-            if (!key.toLowerCase().includes('token')) {
-              acc[key] = filteredAccount[key];
-            }
-            return acc;
-          },
-          {} as any,
-        );
-        
+    const { passwordHash, ...filteredAccount } = account;
+    const sanitizedAccount = Object.keys(filteredAccount).reduce((acc, key) => {
+      if (!key.toLowerCase().includes('token')) {
+        acc[key] = filteredAccount[key];
+      }
+      return acc;
+    }, {} as any);
 
     return {
       message: 'OK',

@@ -56,7 +56,7 @@ export class ActivitiesService {
         take,
         skip,
         orderBy: { createdAt: 'desc' },
-      
+
         include: {
           supervisor: {
             select: {
@@ -67,7 +67,6 @@ export class ActivitiesService {
                   dob: true,
                 },
               },
-            
             },
           },
           approvers: {
@@ -102,7 +101,9 @@ export class ActivitiesService {
         if (activity.title?.toLowerCase().includes(search.toLowerCase())) {
           matchedFields.add('title');
         }
-        if (activity.description?.toLowerCase().includes(search.toLowerCase())) {
+        if (
+          activity.description?.toLowerCase().includes(search.toLowerCase())
+        ) {
           matchedFields.add('description');
         }
       });
