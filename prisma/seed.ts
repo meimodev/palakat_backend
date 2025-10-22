@@ -7,6 +7,7 @@ import {
   MaritalStatus,
   ApprovalStatus,
   PaymentMethod,
+  GeneratedBy,
 } from '@prisma/client';
 import * as process from 'node:process';
 import * as bcrypt from 'bcryptjs';
@@ -36,6 +37,8 @@ const CONFIG = {
   activitiesPerChurch: 5, // At least 2 for revenue, 2 for expense, 1 extra for variation
   songsPerBook: 3,
   maxApproversPerActivity: 2,
+  reportsPerChurch: 2, // 1 manual, 1 system
+  documentsPerChurch: 3, // 2 with files, 1 without file
   defaultPassword: 'password',
 };
 
@@ -332,6 +335,9 @@ async function cleanDatabase() {
     prisma.revenue.deleteMany(),
     prisma.expense.deleteMany(),
     prisma.activity.deleteMany(),
+    prisma.report.deleteMany(),
+    prisma.document.deleteMany(),
+    prisma.fileManager.deleteMany(),
     prisma.songPart.deleteMany(),
     prisma.song.deleteMany(),
     prisma.membershipPosition.deleteMany(),
@@ -756,6 +762,110 @@ async function seedSongs() {
   return songs;
 }
 
+async function seedFiles() {
+  console.log('📁 Creating files...');
+
+  const files = [];
+  const fileExtensions = ['pdf', 'docx', 'xlsx', 'png', 'jpg'];
+  const baseUrls = [
+    'https://storage.example.com/files/',
+    'https://cdn.example.com/documents/',
+    'https://assets.example.com/uploads/',
+  ];
+
+  // Create files for reports (2 per church) and documents (2 per church)
+  const totalFiles = CONFIG.churches * (CONFIG.reportsPerChurch + 2);
+
+  for (let i = 0; i < totalFiles; i++) {
+    const extension = randomElement(fileExtensions);
+    const baseUrl = randomElement(baseUrls);
+    const fileName = `file-${Date.now()}-${i}.${extension}`;
+    const sizeInKB = parseFloat((seededRandom() * 5000 + 100).toFixed(2)); // 100KB to 5MB
+
+    const file = await prisma.fileManager.create({
+      data: {
+        sizeInKB,
+        url: `https://files.testfile.org/PDF/10MB-TESTFILE.ORG.pdf`,
+      },
+    });
+
+    files.push(file);
+  }
+
+  console.log(`✅ Created ${files.length} files`);
+  return files;
+}
+
+async function seedReports(churches: any[], files: any[]) {
+  console.log('📊 Creating reports...');
+
+  const reports = [];
+  const reportTypes = [
+    'Laporan Keuangan',
+    'Laporan Kegiatan',
+    'Laporan Jemaat',
+    'Laporan Kolom',
+    'Laporan Tahunan',
+  ];
+  const generatedByValues = Object.values(GeneratedBy);
+  let fileIndex = 0;
+
+  for (let i = 0; i < CONFIG.churches * CONFIG.reportsPerChurch; i++) {
+    const churchIndex = Math.floor(i / CONFIG.reportsPerChurch);
+    const church = churches[churchIndex];
+    const reportType = randomElement(reportTypes);
+    const generatedBy = generatedByValues[i % generatedByValues.length];
+    const year = 2024 - Math.floor(seededRandom() * 3); // 2022-2024
+    const month = Math.floor(seededRandom() * 12) + 1;
+
+    const report = await prisma.report.create({
+      data: {
+        name: `${reportType} ${church.name} ${year}-${String(month).padStart(2, '0')}`,
+        generatedBy,
+        churchId: church.id,
+        fileId: files[fileIndex].id,
+      },
+    });
+
+    reports.push(report);
+    fileIndex++;
+  }
+
+  console.log(`✅ Created ${reports.length} reports`);
+  return reports;
+}
+
+async function seedDocuments(churches: any[], files: any[]) {
+  console.log('📄 Creating documents...');
+
+  const documents = [];
+  let fileIndex = CONFIG.churches * CONFIG.reportsPerChurch; // Start after report files
+
+  for (let i = 0; i < CONFIG.churches * CONFIG.documentsPerChurch; i++) {
+    const churchIndex = Math.floor(i / CONFIG.documentsPerChurch);
+    const church = churches[churchIndex];
+    const docIndex = i % CONFIG.documentsPerChurch;
+    
+    // Every 3rd document (docIndex === 2) will have no file
+    const hasFile = docIndex !== 2;
+    const accountNumber = `DOC-${String(church.id).padStart(3, '0')}-${String(i).padStart(4, '0')}`;
+
+    const document = await prisma.document.create({
+      data: {
+        accountNumber,
+        churchId: church.id,
+        fileId: hasFile ? files[fileIndex]?.id : null,
+      },
+    });
+
+    documents.push(document);
+    if (hasFile) fileIndex++;
+  }
+
+  console.log(`✅ Created ${documents.length} documents`);
+  return documents;
+}
+
 async function printSummary(
   accounts: any[],
   churches: any[],
@@ -772,6 +882,9 @@ async function printSummary(
   console.log(`💰 Revenues: ${await prisma.revenue.count()}`);
   console.log(`💸 Expenses: ${await prisma.expense.count()}`);
   console.log(`🎵 Songs: ${songs.length}`);
+  console.log(`📁 Files: ${await prisma.fileManager.count()}`);
+  console.log(`📊 Reports: ${await prisma.report.count()}`);
+  console.log(`📄 Documents: ${await prisma.document.count()}`);
 
   // Enum coverage
   console.log('\n📋 Enum Coverage:');
@@ -824,6 +937,23 @@ async function printSummary(
     _count: true,
   });
   console.log('Expense Payment Method:', expensePaymentMethodCounts);
+
+  const generatedByCounts = await prisma.report.groupBy({
+    by: ['generatedBy'],
+    _count: true,
+  });
+  console.log('Report Generated By:', generatedByCounts);
+
+  // Documents with and without files
+  const documentsWithFiles = await prisma.document.count({
+    where: { fileId: { not: null } },
+  });
+  const documentsWithoutFiles = await prisma.document.count({
+    where: { fileId: null },
+  });
+  console.log(
+    `\n📄 Documents: ${documentsWithFiles} with files, ${documentsWithoutFiles} without files`,
+  );
 
   // Accounts without membership
   const accountsWithoutMembership = await prisma.account.findMany({
@@ -891,6 +1021,9 @@ async function main() {
     await seedRevenues(activities, churches);
     await seedExpenses(activities, churches);
     const songs = await seedSongs();
+    const files = await seedFiles();
+    await seedReports(churches, files);
+    await seedDocuments(churches, files);
 
     // Print summary
     await printSummary(accounts, churches, memberships, activities, songs);

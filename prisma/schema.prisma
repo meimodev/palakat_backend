@@ -27,6 +27,8 @@ model Church {
   membershipPositions MembershipPosition[]
   revenues            Revenue[]
   expenses            Expense[]
+  reports             Report[]
+  documents           Document[]
 
   @@index([name])
 }
@@ -235,4 +237,48 @@ enum MaritalStatus {
 enum PaymentMethod {
   CASH
   CASHLESS
+}
+
+enum GeneratedBy {
+  MANUAL
+  SYSTEM
+}
+
+model FileManager {
+  id         Int       @id @default(autoincrement())
+  sizeInKB   Float
+  url        String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  report     Report?
+  document   Document?
+}
+
+model Report {
+  id          Int         @id @default(autoincrement())
+  name        String
+  generatedBy GeneratedBy
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  churchId    Int
+  church      Church      @relation(fields: [churchId], references: [id])
+  fileId      Int         @unique
+  file        FileManager @relation(fields: [fileId], references: [id])
+
+  @@index([churchId])
+  @@index([generatedBy])
+}
+
+model Document {
+  id            Int          @id @default(autoincrement())
+  accountNumber String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  churchId      Int
+  church        Church       @relation(fields: [churchId], references: [id])
+  fileId        Int?         @unique
+  file          FileManager? @relation(fields: [fileId], references: [id])
+
+  @@index([churchId])
+  @@index([accountNumber])
 }

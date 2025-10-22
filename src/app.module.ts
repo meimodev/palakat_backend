@@ -16,6 +16,9 @@ import { MembershipPositionModule } from './membership-position/membership-posit
 import { LocationModule } from './location/location.module';
 import { RevenueModule } from './revenue/revenue.module';
 import { ExpenseModule } from './expense/expense.module';
+import { FileModule } from './file/file.module';
+import { ReportModule } from './report/report.module';
+import { DocumentModule } from './document/document.module';
 
 @Module({
   imports: [
@@ -32,6 +35,9 @@ import { ExpenseModule } from './expense/expense.module';
     LocationModule,
     RevenueModule,
     ExpenseModule,
+    FileModule,
+    ReportModule,
+    DocumentModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],
