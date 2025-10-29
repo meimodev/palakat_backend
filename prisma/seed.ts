@@ -39,6 +39,7 @@ const CONFIG = {
   maxApproversPerActivity: 2,
   reportsPerChurch: 2, // 1 manual, 1 system
   documentsPerChurch: 3, // 2 with files, 1 without file
+  approvalRulesPerChurch: 2, // 1 active, 1 inactive
   defaultPassword: 'password',
 };
 
@@ -197,6 +198,15 @@ const POSITION_NAMES = [
   'Pengurus Harian',
 ];
 
+const APPROVAL_RULE_NAMES = [
+  'Persetujuan Kegiatan Pelayanan',
+  'Persetujuan Pengeluaran Dana',
+  'Persetujuan Acara Besar',
+  'Persetujuan Keuangan Gereja',
+  'Persetujuan Penggunaan Fasilitas',
+  'Persetujuan Program Jemaat',
+];
+
 const ACTIVITY_TITLES = {
   SERVICE: [
     'Kebaktian Minggu Pagi',
@@ -340,6 +350,7 @@ async function cleanDatabase() {
     prisma.fileManager.deleteMany(),
     prisma.songPart.deleteMany(),
     prisma.song.deleteMany(),
+    prisma.approvalRule.deleteMany(),
     prisma.membershipPosition.deleteMany(),
     prisma.membership.deleteMany(),
     prisma.column.deleteMany(),
@@ -416,6 +427,7 @@ async function seedChurches() {
         description: randomBoolean(0.6)
           ? `Gereja ${name} yang terletak di ${area}.`
           : null,
+        documentAccountNumber: `CHR-${String(i + 1).padStart(4, '0')}`,
         locationId: location.id,
         columns: {
           create: columns.map((col) => ({ name: col })),
@@ -498,6 +510,78 @@ async function seedMembershipPositions(memberships: any[]) {
 
   console.log(`✅ Created ${positions.length} membership positions`);
   return positions;
+}
+
+async function seedApprovalRules(churches: any[]) {
+  console.log('📜 Creating approval rules...');
+
+  const approvalRules = [];
+
+  for (const church of churches) {
+    // Get all membership positions for this church that don't have an approval rule yet
+    const churchPositions = await prisma.membershipPosition.findMany({
+      where: { 
+        churchId: church.id,
+        approvalRuleId: null,
+      },
+    });
+
+    if (churchPositions.length === 0) continue;
+
+    for (let i = 0; i < CONFIG.approvalRulesPerChurch; i++) {
+      const ruleName = randomElement(APPROVAL_RULE_NAMES);
+      const active = i === 0; // First rule is active, second is inactive
+
+      // Calculate how many positions to assign to this rule
+      const availablePositions = churchPositions.filter(
+        (p) => !approvalRules.some((r) =>
+          r.positions?.some((rp: any) => rp.id === p.id),
+        ),
+      );
+
+      if (availablePositions.length === 0) continue;
+
+      // Select 1-3 positions for this approval rule (or all available if less)
+      const numPositions = Math.min(
+        Math.floor(seededRandom() * 3) + 1,
+        availablePositions.length,
+      );
+      const selectedPositions = availablePositions.slice(0, numPositions);
+
+      const approvalRule = await prisma.approvalRule.create({
+        data: {
+          name: `${ruleName} ${i + 1}`,
+          description: `Deskripsi untuk ${ruleName} ${i + 1} di ${church.name}`,
+          active,
+          churchId: church.id,
+        },
+        include: {
+          positions: true,
+        },
+      });
+
+      // Update the selected positions to reference this approval rule
+      await prisma.membershipPosition.updateMany({
+        where: {
+          id: { in: selectedPositions.map((p) => p.id) },
+        },
+        data: {
+          approvalRuleId: approvalRule.id,
+        },
+      });
+
+      // Fetch the updated approval rule with positions
+      const updatedRule = await prisma.approvalRule.findUnique({
+        where: { id: approvalRule.id },
+        include: { positions: true },
+      });
+
+      approvalRules.push(updatedRule);
+    }
+  }
+
+  console.log(`✅ Created ${approvalRules.length} approval rules`);
+  return approvalRules;
 }
 
 async function seedActivities(memberships: any[], churches: any[]) {
@@ -841,6 +925,15 @@ async function seedDocuments(churches: any[], files: any[]) {
   const documents = [];
   let fileIndex = CONFIG.churches * CONFIG.reportsPerChurch; // Start after report files
 
+  const documentTypes = [
+    'Surat Keterangan Baptis',
+    'Surat Keterangan Sidi',
+    'Surat Keterangan Nikah',
+    'Surat Keterangan Jemaat',
+    'Surat Rekomendasi',
+    'Surat Pengantar',
+  ];
+
   for (let i = 0; i < CONFIG.churches * CONFIG.documentsPerChurch; i++) {
     const churchIndex = Math.floor(i / CONFIG.documentsPerChurch);
     const church = churches[churchIndex];
@@ -849,9 +942,11 @@ async function seedDocuments(churches: any[], files: any[]) {
     // Every 3rd document (docIndex === 2) will have no file
     const hasFile = docIndex !== 2;
     const accountNumber = `DOC-${String(church.id).padStart(3, '0')}-${String(i).padStart(4, '0')}`;
+    const documentType = randomElement(documentTypes);
 
     const document = await prisma.document.create({
       data: {
+        name: `${documentType} - ${church.name}`,
         accountNumber,
         churchId: church.id,
         fileId: hasFile ? files[fileIndex]?.id : null,
@@ -878,6 +973,8 @@ async function printSummary(
   console.log(`🏛️  Churches: ${churches.length}`);
   console.log(`👤 Accounts: ${accounts.length}`);
   console.log(`🤝 Memberships: ${memberships.length}`);
+  console.log(`📋 Membership Positions: ${await prisma.membershipPosition.count()}`);
+  console.log(`📜 Approval Rules: ${await prisma.approvalRule.count()}`);
   console.log(`📅 Activities: ${activities.length}`);
   console.log(`💰 Revenues: ${await prisma.revenue.count()}`);
   console.log(`💸 Expenses: ${await prisma.expense.count()}`);
@@ -1016,6 +1113,7 @@ async function main() {
     const churches = await seedChurches();
     const memberships = await seedMemberships(accounts, churches);
     await seedMembershipPositions(memberships);
+    await seedApprovalRules(churches);
     const activities = await seedActivities(memberships, churches);
     await seedApprovers(activities, memberships);
     await seedRevenues(activities, churches);

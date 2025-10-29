@@ -19,6 +19,7 @@ import { ExpenseModule } from './expense/expense.module';
 import { FileModule } from './file/file.module';
 import { ReportModule } from './report/report.module';
 import { DocumentModule } from './document/document.module';
+import { ApprovalRuleModule } from './approval-rule/approval-rule.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DocumentModule } from './document/document.module';
     FileModule,
     ReportModule,
     DocumentModule,
+    ApprovalRuleModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger, PrismaExceptionFilter, HelperService],

@@ -25,9 +25,9 @@ export function stripKeys<T = any>(
     const result: any = {};
 
     for (const [key, value] of Object.entries(data)) {
-      // Skip keys that should be stripped, UNLESS parent key is 'set'
-      // This preserves { set: [{ id: 1 }, { id: 2 }] } in Prisma relations
-      if (keysToStrip.includes(key) && parentKey !== 'set') {
+      // Skip keys that should be stripped, UNLESS parent key is 'set' or 'connect'
+      // This preserves { set: [{ id: 1 }, { id: 2 }] } and { connect: [{ id: 1 }, { id: 2 }] } in Prisma relations
+      if (keysToStrip.includes(key) && parentKey !== 'set' && parentKey !== 'connect') {
         continue;
       }
 
@@ -128,15 +128,19 @@ export function transformToIdArrays<T = any>(
 }
 
 /**
- * Transforms arrays of objects with 'id' into Prisma 'set' format for relation updates.
- * Example: [{ id: 1, name: "..." }, { id: 2, ... }] -> { set: [{ id: 1 }, { id: 2 }] }
+ * Transforms arrays of objects with 'id' into Prisma relation format for relation updates.
+ * Supports both 'set' (replace all) and 'connect' (add to existing) formats.
+ * Example with 'set': [{ id: 1, name: "..." }, { id: 2, ... }] -> { set: [{ id: 1 }, { id: 2 }] }
+ * Example with 'connect': [{ id: 1, name: "..." }, { id: 2, ... }] -> { connect: [{ id: 1 }, { id: 2 }] }
  * @param data - The object or array to process
  * @param fieldsToTransform - Array of field names to transform (default: ['membershipPositions'])
- * @returns A new object with specified fields transformed to Prisma set format
+ * @param format - Relation format to use: 'set' or 'connect' (default: 'set')
+ * @returns A new object with specified fields transformed to Prisma relation format
  */
 export function transformToSetFormat<T = any>(
   data: T,
   fieldsToTransform: string[] = ['membershipPositions'],
+  format: 'set' | 'connect' = 'set',
 ): T {
   // Handle null or undefined
   if (data === null || data === undefined) {
@@ -146,7 +150,7 @@ export function transformToSetFormat<T = any>(
   // Handle arrays - recursively process each item
   if (Array.isArray(data)) {
     return data.map((item) =>
-      transformToSetFormat(item, fieldsToTransform),
+      transformToSetFormat(item, fieldsToTransform, format),
     ) as T;
   }
 
@@ -157,9 +161,9 @@ export function transformToSetFormat<T = any>(
     for (const [key, value] of Object.entries(data)) {
       // Check if this field should be transformed
       if (fieldsToTransform.includes(key)) {
-        // Handle array of objects -> transform to { set: [{ id: ... }] }
+        // Handle array of objects -> transform to { set: [...] } or { connect: [...] }
         if (Array.isArray(value)) {
-          const setArray = value
+          const relationArray = value
             .map((item) => {
               if (typeof item === 'object' && item !== null && 'id' in item) {
                 return { id: item.id };
@@ -168,7 +172,7 @@ export function transformToSetFormat<T = any>(
             })
             .filter((item) => item !== null);
 
-          result[key] = { set: setArray };
+          result[key] = { [format]: relationArray };
         }
         // Handle single object -> keep as-is or transform if needed
         else if (typeof value === 'object' && value !== null && 'id' in value) {
@@ -176,11 +180,11 @@ export function transformToSetFormat<T = any>(
         }
         // If value doesn't have an id, keep as-is
         else {
-          result[key] = transformToSetFormat(value, fieldsToTransform);
+          result[key] = transformToSetFormat(value, fieldsToTransform, format);
         }
       } else {
         // Recursively process nested values
-        result[key] = transformToSetFormat(value, fieldsToTransform);
+        result[key] = transformToSetFormat(value, fieldsToTransform, format);
       }
     }
 

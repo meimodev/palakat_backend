@@ -13,22 +13,24 @@ datasource db {
 }
 
 model Church {
-  id                  Int                  @id @default(autoincrement())
-  name                String
-  phoneNumber         String?
-  email               String?
-  description         String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  locationId          Int                  @unique
-  location            Location             @relation(fields: [locationId], references: [id])
-  columns             Column[]
-  memberships         Membership[]
-  membershipPositions MembershipPosition[]
-  revenues            Revenue[]
-  expenses            Expense[]
-  reports             Report[]
-  documents           Document[]
+  id                    Int                  @id @default(autoincrement())
+  name                  String
+  phoneNumber           String?
+  email                 String?
+  description           String?
+  documentAccountNumber String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  locationId            Int                  @unique
+  location              Location             @relation(fields: [locationId], references: [id])
+  columns               Column[]
+  memberships           Membership[]
+  membershipPositions   MembershipPosition[]
+  revenues              Revenue[]
+  expenses              Expense[]
+  reports               Report[]
+  documents             Document[]
+  approvalRules         ApprovalRule[]
 
   @@index([name])
 }
@@ -65,14 +67,16 @@ model Membership {
 }
 
 model MembershipPosition {
-  id           Int         @id @default(autoincrement())
-  name         String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  membershipId Int?
-  membership   Membership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
-  churchId     Int?
-  church       Church?     @relation(fields: [churchId], references: [id], onDelete: SetNull)
+  id             Int           @id @default(autoincrement())
+  name           String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  membershipId   Int?
+  membership     Membership?   @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  churchId       Int?
+  church         Church?       @relation(fields: [churchId], references: [id], onDelete: SetNull)
+  approvalRuleId Int?
+  approvalRule   ApprovalRule? @relation(fields: [approvalRuleId], references: [id], onDelete: SetNull)
 }
 
 model Account {
@@ -94,6 +98,21 @@ model Account {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   membership            Membership?
+}
+
+model ApprovalRule {
+  id          Int                  @id @default(autoincrement())
+  name        String
+  description String?
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  churchId    Int
+  church      Church               @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  positions   MembershipPosition[]
+
+  @@index([churchId])
+  @@index([active])
 }
 
 model Activity {
@@ -271,6 +290,7 @@ model Report {
 
 model Document {
   id            Int          @id @default(autoincrement())
+  name          String
   accountNumber String
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
