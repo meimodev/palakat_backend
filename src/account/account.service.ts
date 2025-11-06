@@ -161,9 +161,16 @@ export class AccountService {
     };
   }
 
-  async findOne(accountId: number) {
+  async findOne(
+    identifier: { accountId: number } | { phone: string },
+  ) {
+    // Determine which identifier to use
+    const where: Prisma.AccountWhereUniqueInput = 'accountId' in identifier
+      ? { id: identifier.accountId }
+      : { phone: identifier.phone };
+
     const account = await this.prisma.account.findUniqueOrThrow({
-      where: { id: accountId },
+      where,
       select: {
         id: true,
         name: true,
@@ -208,7 +215,9 @@ export class AccountService {
     });
 
     return {
-      message: 'OK',
+      message: 'accountId' in identifier 
+        ? `OK - accountId: ${identifier.accountId}` 
+        : `OK - phone: ${identifier.phone}`,
       data: account,
     };
   }

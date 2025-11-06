@@ -29,7 +29,6 @@ export class AuthController {
     return this.authService.generateClientToken(req.user as ValidatedClient);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Get('validate')
   async validate(@Query('phone') phone?: string) {
     return this.authService.validate(phone as string);

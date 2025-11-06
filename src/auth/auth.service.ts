@@ -32,12 +32,55 @@ export class AuthService {
     const account = await this.prisma.account.findUniqueOrThrow({
       where: { phone },
       select: {
-        membership: true,
-      },
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        gender: true,
+        maritalStatus: true,
+        dob: true,
+        claimed: true,
+        createdAt: true,
+        updatedAt: true,
+        membership: {
+          include:{
+            membershipPositions:true,
+            church:{
+              include:{
+                location:true,
+              }
+            },
+          }
+        },
+      }
+     
     });
+
+    // Generate both access and refresh tokens
+    const { accessToken, refreshToken, refreshTokenExpiresAt } =
+      await this.issueTokens(account.id);
+
+    // Store refresh token in database
+    const decoded: any = this.jwtService.decode(refreshToken);
+    await this.prisma.account.update({
+      where: { id: account.id },
+      data: {
+        refreshTokenHash: await bcrypt.hash(refreshToken, 12),
+        refreshTokenExpiresAt,
+        refreshTokenJti:
+          decoded && typeof decoded === 'object' ? (decoded as any).jti : null,
+      } as any,
+    } as any);
+
     return {
       message: 'OK',
-      data: account,
+      data: {
+        tokens: {
+          accessToken,
+          refreshToken,
+        },
+        account,
+      },
     };
   }
 

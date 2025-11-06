@@ -25,8 +25,8 @@ import {
   transformToSetFormat,
 } from 'src/utils';
 
-@Controller('account')
 @UseGuards(AuthGuard('jwt'))
+@Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
@@ -36,10 +36,16 @@ export class AccountController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.accountService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    // Try to parse as number for accountId, otherwise treat as phone
+    const numericId = parseInt(id, 10);
+    const identifier = !isNaN(numericId) && numericId.toString() === id
+      ? { accountId: numericId }
+      : { phone: id };
+    
+    return this.accountService.findOne(identifier);
   }
-
+  
   @Get()
   async findAll(@Query() query: AccountListQueryDto) {
     return this.accountService.findAll(query);
