@@ -264,13 +264,13 @@ enum GeneratedBy {
 }
 
 model FileManager {
-  id         Int       @id @default(autoincrement())
-  sizeInKB   Float
-  url        String
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  report     Report?
-  document   Document?
+  id        Int       @id @default(autoincrement())
+  sizeInKB  Float
+  url       String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  report    Report?
+  document  Document?
 }
 
 model Report {

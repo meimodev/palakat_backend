@@ -43,17 +43,17 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         membership: {
-          include:{
-            membershipPositions:true,
-            church:{
-              include:{
-                location:true,
-              }
+          include: {
+            column: true,
+            membershipPositions: true,
+            church: {
+              include: {
+                location: true,
+              },
             },
-          }
+          },
         },
-      }
-     
+      },
     });
 
     // Generate both access and refresh tokens
@@ -102,6 +102,7 @@ export class AuthService {
         membership: {
           include: {
             membershipPositions: true,
+            column: true,
             church: {
               include: {
                 location: true,

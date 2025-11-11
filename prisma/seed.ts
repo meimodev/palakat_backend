@@ -78,6 +78,24 @@ function generateLongitude(): number {
   return parseFloat((106.5 + seededRandom() * 0.5).toFixed(4));
 }
 
+function getStartOfWeek(date: Date = new Date()): Date {
+  const result = new Date(date);
+  const day = result.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Adjust when day is Sunday (0)
+  result.setDate(result.getDate() + diff);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function getEndOfWeek(date: Date = new Date()): Date {
+  const result = new Date(date);
+  const day = result.getDay();
+  const diff = day === 0 ? 0 : 7 - day; // If Sunday, use same day; else calculate days until Sunday
+  result.setDate(result.getDate() + diff);
+  result.setHours(23, 59, 59, 999);
+  return result;
+}
+
 // ============================================================================
 // DATA GENERATORS
 // ============================================================================
@@ -319,14 +337,15 @@ function generateActivityData(
   index: number,
 ) {
   const title = randomElement(ACTIVITY_TITLES[type]);
-  const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + Math.floor(seededRandom() * 90));
+  const weekStart = getStartOfWeek();
+  const weekEnd = getEndOfWeek();
+  const activityDate = randomDate(weekStart, weekEnd);
 
   return {
     title: `${title} ${index}`,
     activityType: type,
     bipra,
-    date: futureDate,
+    date: activityDate,
     description: randomBoolean(0.6)
       ? `Deskripsi lengkap untuk ${title} ${index}`
       : null,
