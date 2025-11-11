@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Activity, Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
 import { ActivityListQueryDto } from './dto/activity-list.dto';
+import { MaritalStatus } from '@prisma/client';
 
 @Injectable()
 export class ActivitiesService {
@@ -12,50 +12,149 @@ export class ActivitiesService {
       membershipId,
       churchId,
       columnId,
-      startTimestamp,
-      endTimestamp,
+      startDate,
+      endDate,
+      activityType,
+      search,
       skip,
       take,
     } = query;
 
-    const where: Prisma.ActivityWhereInput = {
-      membershipId: membershipId,
-      membership: {
+    const where: any = {
+      supervisorId: membershipId,
+      supervisor: {
         churchId: churchId,
         columnId: columnId,
       },
     };
 
-    if (startTimestamp || endTimestamp) {
-      where.date = {};
-      if (startTimestamp) {
-        where.date.gte = startTimestamp;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = startDate;
       }
-      if (endTimestamp) {
-        where.date.lte = endTimestamp;
+      if (endDate) {
+        where.createdAt.lte = endDate;
       }
     }
 
-    const [total, activities] = await this.prisma.$transaction([
-      this.prisma.activity.count({ where }),
-      this.prisma.activity.findMany({
+    if (activityType) {
+      where.activityType = activityType;
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, activities] = await (this.prisma as any).$transaction([
+      (this.prisma as any).activity.count({ where }),
+      (this.prisma as any).activity.findMany({
         where,
         take,
         skip,
-        orderBy: { date: 'desc' },
+        orderBy: { createdAt: 'desc' },
+
+        include: {
+          supervisor: {
+            select: {
+              account: {
+                select: {
+                  name: true,
+                  phone: true,
+                  dob: true,
+                },
+              },
+            },
+          },
+          approvers: {
+            select: {
+              id: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+              membership: {
+                select: {
+                  account: {
+                    select: {
+                      id: true,
+                      name: true,
+                      phone: true,
+                      dob: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       }),
     ]);
 
+    // Track which fields matched the search
+    let searchInfo = '';
+    if (search && activities.length > 0) {
+      const matchedFields = new Set<string>();
+      activities.forEach((activity: any) => {
+        if (activity.title?.toLowerCase().includes(search.toLowerCase())) {
+          matchedFields.add('title');
+        }
+        if (
+          activity.description?.toLowerCase().includes(search.toLowerCase())
+        ) {
+          matchedFields.add('description');
+        }
+      });
+      if (matchedFields.size > 0) {
+        searchInfo = ` (matched in: ${Array.from(matchedFields).join(', ')})`;
+      }
+    }
+
     return {
-      message: 'Activities retrieved successfully',
+      message: `Activities retrieved successfully${searchInfo}`,
       data: activities,
       total,
     };
   }
 
   async findOne(id: number) {
-    const activity = await this.prisma.activity.findUniqueOrThrow({
+    const activity = await (this.prisma as any).activity.findUniqueOrThrow({
       where: { id },
+      include: {
+        supervisor: {
+          include: {
+            membershipPositions: true,
+            account: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+                dob: true,
+              },
+            },
+          },
+        },
+        location: true,
+        approvers: {
+          include: {
+            membership: {
+              include: {
+                membershipPositions: true,
+                account: {
+                  select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    dob: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
     return {
       message: 'Activity retrieved successfully',
@@ -64,7 +163,7 @@ export class ActivitiesService {
   }
 
   async remove(id: number) {
-    await this.prisma.activity.delete({
+    await (this.prisma as any).activity.delete({
       where: { id },
     });
     return {
@@ -73,12 +172,13 @@ export class ActivitiesService {
   }
 
   async create(
-    createActivityDto: Prisma.ActivityCreateInput,
-  ): Promise<{ message: string; data: Activity }> {
-    const activity = await this.prisma.activity.create({
+    createActivityDto: any,
+  ): Promise<{ message: string; data: any }> {
+    const activity = await (this.prisma as any).activity.create({
       data: createActivityDto,
       include: {
-        membership: {},
+        supervisor: true,
+        location: true,
       },
     });
     return {
@@ -89,9 +189,9 @@ export class ActivitiesService {
 
   async update(
     id: number,
-    updateActivityDto: Prisma.ActivityUpdateInput,
-  ): Promise<{ message: string; data: Activity }> {
-    const activity = await this.prisma.activity.update({
+    updateActivityDto: any,
+  ): Promise<{ message: string; data: any }> {
+    const activity = await (this.prisma as any).activity.update({
       where: { id },
       data: updateActivityDto,
     });

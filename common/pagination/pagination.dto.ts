@@ -1,6 +1,10 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min, Max } from 'class-validator';
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from './pagination.types';
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+} from './pagination.types';
 
 export class PaginationQueryDto {
   @IsOptional()

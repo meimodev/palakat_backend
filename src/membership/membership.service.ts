@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { Membership, Prisma } from '@prisma/client';
 import { MembershipListQueryDto } from './dto/membership-list.dto';
 
 @Injectable()
@@ -8,14 +7,35 @@ export class MembershipService {
   constructor(private prisma: PrismaService) {}
 
   async create(
-    createMembershipDto: Prisma.MembershipCreateInput,
-  ): Promise<{ message: string; data: Membership }> {
-    const membership = await this.prisma.membership.create({
+    createMembershipDto: any,
+  ): Promise<{ message: string; data: any }> {
+    if (!createMembershipDto?.columnId && !createMembershipDto?.churchId) {
+      throw new BadRequestException('Either columnId or churchId is required');
+    }
+
+    if (createMembershipDto?.columnId != null) {
+      const column = await (this.prisma as any).column.findUnique({
+        where: { id: createMembershipDto.columnId },
+        select: { id: true, churchId: true },
+      });
+      if (!column) {
+        throw new BadRequestException('columnId does not exist');
+      }
+      // If churchId not provided, derive from column
+      if (createMembershipDto?.churchId == null) {
+        createMembershipDto.churchId = column.churchId;
+      } else if (column.churchId !== createMembershipDto.churchId) {
+        throw new BadRequestException('columnId belongs to a different church');
+      }
+    }
+
+    const membership = await (this.prisma as any).membership.create({
       data: createMembershipDto,
       include: {
         account: true,
         church: true,
         column: true,
+        membershipPositions: true,
       },
     });
 
@@ -27,11 +47,11 @@ export class MembershipService {
 
   async findAll(query: MembershipListQueryDto): Promise<{
     message: string;
-    data: Membership[];
+    data: any[];
     total: number;
   }> {
     const { churchId, columnId, skip, take } = query ?? ({} as any);
-    const where: Prisma.MembershipWhereInput = {};
+    const where: any = {};
 
     if (churchId) {
       where.churchId = churchId;
@@ -40,7 +60,7 @@ export class MembershipService {
       where.columnId = columnId;
     }
 
-    const [total, memberships] = await this.prisma.$transaction([
+    const [total, memberships] = await (this.prisma as any).$transaction([
       this.prisma.membership.count({ where }),
       this.prisma.membership.findMany({
         where,
@@ -51,6 +71,7 @@ export class MembershipService {
           account: true,
           church: true,
           column: true,
+          membershipPositions: true,
         },
       }),
     ]);
@@ -61,13 +82,14 @@ export class MembershipService {
     } as any;
   }
 
-  async findOne(id: number): Promise<{ message: string; data: Membership }> {
-    const membership = await this.prisma.membership.findUniqueOrThrow({
+  async findOne(id: number): Promise<{ message: string; data: any }> {
+    const membership = await (this.prisma as any).membership.findUniqueOrThrow({
       where: { id },
       include: {
         account: true,
         church: true,
         column: true,
+        membershipPositions: true,
       },
     });
 
@@ -79,15 +101,32 @@ export class MembershipService {
 
   async update(
     id: number,
-    updateMembershipDto: Prisma.MembershipUpdateInput,
-  ): Promise<{ message: string; data: Membership }> {
-    const membership = await this.prisma.membership.update({
+    updateMembershipDto: any,
+  ): Promise<{ message: string; data: any }> {
+    if (updateMembershipDto?.columnId != null) {
+      const column = await (this.prisma as any).column.findUnique({
+        where: { id: updateMembershipDto.columnId },
+        select: { id: true, churchId: true },
+      });
+      if (!column) {
+        throw new BadRequestException('columnId does not exist');
+      }
+      // If churchId not provided, derive from column; else validate match
+      if (updateMembershipDto?.churchId == null) {
+        updateMembershipDto.churchId = column.churchId;
+      } else if (column.churchId !== updateMembershipDto.churchId) {
+        throw new BadRequestException('columnId belongs to a different church');
+      }
+    }
+
+    const membership = await (this.prisma as any).membership.update({
       where: { id },
       data: updateMembershipDto,
       include: {
         account: true,
         church: true,
         column: true,
+        membershipPositions: true,
       },
     });
 
@@ -100,7 +139,7 @@ export class MembershipService {
   async remove(id: number): Promise<{ message: string }> {
     await this.findOne(id);
 
-    await this.prisma.membership.delete({
+    await (this.prisma as any).membership.delete({
       where: { id },
     });
 

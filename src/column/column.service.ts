@@ -23,9 +23,17 @@ export class ColumnService {
       }),
     ]);
 
+    const data = columns.map((column: any) => {
+      const { _count, ...rest } = column;
+      return {
+        ...rest,
+        memberCount: _count?.memberships ?? 0,
+      };
+    });
+
     return {
       message: 'Columns fetched successfully',
-      data: columns,
+      data,
       total,
     };
   }
@@ -33,14 +41,43 @@ export class ColumnService {
   async findOne(id: number) {
     const column = await this.prismaService.column.findUniqueOrThrow({
       where: { id },
+      include: {
+        memberships: {
+          select: {
+            id: true,
+            account: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
+
+    const { memberships, ...rest } = column;
+    const membershipsData = memberships.map((m) => {
+      return {
+        membershipId: m.id,
+        name: m.account.name,
+      };
+    });
+
     return {
       message: 'Column fetched successfully',
-      data: column,
+      data: {
+        ...rest,
+        memberships: membershipsData,
+      },
     };
   }
 
   async remove(id: number): Promise<{ message: string }> {
+    await this.prismaService.membership.updateMany({
+      where: { columnId: id },
+      data: { columnId: null },
+    });
+
     await this.prismaService.column.delete({
       where: { id },
     });

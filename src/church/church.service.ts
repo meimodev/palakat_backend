@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'nestjs-prisma';
-import { HelperService } from 'common/helper/helper.service';
+import { HelperService } from '../../common/helper/helper.service';
 import { ChurchListQueryDto } from './dto/church-list.dto';
 
 @Injectable()
@@ -20,10 +20,7 @@ export class ChurchService {
     const where: Prisma.ChurchWhereInput = {};
     if (search && search.length >= 3) {
       const keyword = search.toLowerCase();
-      where.OR = [
-        { name: { contains: keyword, mode: 'insensitive' } },
-        { address: { contains: keyword, mode: 'insensitive' } },
-      ];
+      where.OR = [{ name: { contains: keyword, mode: 'insensitive' } }];
     }
 
     let churches = [];
@@ -32,7 +29,7 @@ export class ChurchService {
     if (lat != null && lng != null) {
       const [totalCount, allChurchesData] = await this.prisma.$transaction([
         this.prisma.church.count({ where }),
-        this.prisma.church.findMany({ where }),
+        this.prisma.church.findMany({ where, include: { location: true } }),
       ]);
 
       total = totalCount;
@@ -44,8 +41,8 @@ export class ChurchService {
           distance: this.helperService.calculateDistance(
             lat,
             lng,
-            parseFloat(church.latitude),
-            parseFloat(church.longitude),
+            Number(church.location.latitude),
+            Number(church.location.longitude),
           ),
         }))
         .sort((a, b) => a.distance - b.distance);
@@ -60,6 +57,7 @@ export class ChurchService {
           take,
           skip,
           orderBy: { name: 'asc' },
+          include: { location: true },
         }),
       ]);
 
@@ -77,6 +75,11 @@ export class ChurchService {
   async findOne(id: number) {
     const church = await this.prisma.church.findUniqueOrThrow({
       where: { id },
+      include: {
+        location: true,
+        columns: true,
+        membershipPositions: true,
+      },
     });
     return {
       message: 'Church fetched successfully',
@@ -107,6 +110,11 @@ export class ChurchService {
     const church = await this.prisma.church.update({
       where: { id },
       data: updateChurchDto,
+      include: {
+        location: true,
+        columns: true,
+        membershipPositions: true,
+      },
     });
     return {
       message: 'Church updated successfully',
